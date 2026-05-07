@@ -1,0 +1,1010 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<meta name="theme-color" content="#0055ff">
+<title>WB ElectroTech v5.0</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{--bg:#f0f4ff;--card:#fff;--blue:#0055ff;--cyan:#00ccff;--dark:#08102b;--green:#00c853;--red:#ff1744;--yellow:#ffb300;--orange:#ff6200;--purple:#7c3aed;--text:#08102b;--muted:#5a6a9a;--border:#d0dcff;--glow:rgba(0,85,255,0.15);--shadow:0 2px 16px rgba(0,85,255,0.07);--r:14px;--safe:env(safe-area-inset-bottom,0px)}
+html,body{height:100%;overflow:hidden;font-family:'Inter',sans-serif;font-size:14px;background:var(--bg);color:var(--text)}
+body{display:flex;flex-direction:column}
+
+/* LOADER */
+#loader{position:fixed;inset:0;background:var(--dark);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;gap:16px}
+#loader.hide{display:none}
+.ld-icon{width:56px;height:56px;background:linear-gradient(135deg,var(--blue),var(--cyan));border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:28px}
+.ld-t{font-family:'Orbitron',monospace;font-size:18px;font-weight:900;color:var(--cyan)}
+.ld-s{font-size:10px;color:rgba(255,255,255,0.3);letter-spacing:3px}
+.ld-bar{width:180px;height:2px;background:rgba(255,255,255,0.08);border-radius:2px;overflow:hidden}
+.ld-fill{height:100%;background:linear-gradient(90deg,var(--blue),var(--cyan));animation:lf 1.5s ease forwards}
+@keyframes lf{from{width:0}to{width:100%}}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* APP */
+#app{display:none;flex-direction:column;height:100%;overflow:hidden}
+header{background:rgba(255,255,255,0.95);border-bottom:1px solid var(--border);height:56px;padding:0 14px;display:flex;align-items:center;gap:10px;flex-shrink:0;box-shadow:0 1px 12px rgba(0,85,255,0.06)}
+.hlogo{display:flex;align-items:center;gap:8px}
+.hicon{width:34px;height:34px;background:linear-gradient(135deg,var(--dark),var(--blue));border-radius:9px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:16px}
+.htxt{font-family:'Orbitron',monospace;font-size:12px;font-weight:700;color:var(--dark)}
+.hbadge{margin-left:auto;display:flex;align-items:center;gap:5px;background:var(--dark);color:#fff;border-radius:20px;padding:4px 10px;font-size:10px;font-weight:700;cursor:pointer}
+.hdot{width:5px;height:5px;border-radius:50%;background:var(--cyan);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+
+.content{flex:1;overflow-y:auto;overflow-x:hidden;padding:14px;padding-bottom:calc(80px + var(--safe))}
+.content::-webkit-scrollbar{display:none}
+
+/* BOTTOM NAV */
+.bnav-wrap{position:fixed;bottom:0;left:0;right:0;background:rgba(255,255,255,0.97);border-top:1px solid var(--border);display:flex;padding:5px 2px calc(5px + var(--safe));z-index:100}
+.bn{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:5px 1px;cursor:pointer;border:none;background:none;color:var(--muted);font-size:9px;font-weight:600;border-radius:10px;transition:color .2s}
+.bn svg{width:19px;height:19px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.bn.active{color:var(--blue)}
+
+/* PAGES */
+.page{display:none;animation:fu .2s ease}
+.page.active{display:block}
+@keyframes fu{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.ptitle{font-family:'Orbitron',monospace;font-size:15px;font-weight:700;color:var(--dark);margin-bottom:2px}
+.psub{font-size:11px;color:var(--muted);margin-bottom:14px}
+
+/* CARDS */
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:16px;margin-bottom:12px;box-shadow:var(--shadow)}
+.chd{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.cico{width:36px;height:36px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.cb{background:rgba(0,85,255,0.08);border:1px solid rgba(0,85,255,0.15)}
+.cg{background:rgba(0,200,83,0.08);border:1px solid rgba(0,200,83,0.15)}
+.co{background:rgba(255,98,0,0.08);border:1px solid rgba(255,98,0,0.15)}
+.cr{background:rgba(255,23,68,0.08);border:1px solid rgba(255,23,68,0.15)}
+.ctitle{font-size:14px;font-weight:700;color:var(--dark)}
+.csub{font-size:11px;color:var(--muted)}
+
+/* TABS */
+.tabs{display:flex;background:#e6ecff;border-radius:10px;padding:3px;margin-bottom:13px;gap:2px;overflow-x:auto;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tab{flex:1;min-width:fit-content;padding:7px 10px;border:none;background:none;color:var(--muted);border-radius:8px;cursor:pointer;font-size:11px;font-weight:600;white-space:nowrap;font-family:'Inter',sans-serif;transition:all .2s}
+.tab.active{background:var(--card);color:var(--blue);box-shadow:0 1px 6px rgba(0,85,255,0.12)}
+
+/* FORMS */
+.field{margin-bottom:11px}
+label{font-size:11px;color:var(--muted);display:block;margin-bottom:4px;font-weight:500}
+input,select,textarea{width:100%;background:#f0f4ff;border:1.5px solid var(--border);border-radius:9px;padding:10px 12px;color:var(--text);font-size:13px;outline:none;-webkit-appearance:none;font-family:'Inter',sans-serif;transition:border .2s}
+input:focus,select:focus,textarea:focus{border-color:var(--blue);background:#fff;box-shadow:0 0 0 3px rgba(0,85,255,0.08)}
+.r2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.r3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px}
+
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:11px 16px;border-radius:10px;border:none;cursor:pointer;font-size:13px;font-weight:600;transition:all .15s;width:100%;margin-top:4px;font-family:'Inter',sans-serif}
+.btn:active{transform:scale(.97)}
+.bp{background:linear-gradient(135deg,var(--blue),#0099ff);color:#fff;box-shadow:0 3px 12px rgba(0,85,255,0.25)}
+.bg2{background:#e6ecff;border:1.5px solid var(--border);color:var(--text)}
+.br2{background:rgba(255,23,68,0.08);border:1px solid rgba(255,23,68,0.2);color:var(--red)}
+.bsm{padding:6px 11px;font-size:11px;width:auto;margin-top:0;border-radius:8px}
+.bia{background:linear-gradient(135deg,var(--dark),#0033aa);color:#fff;box-shadow:0 3px 14px rgba(0,85,255,0.28)}
+
+/* RESULTS */
+.rbox{background:rgba(0,85,255,0.03);border:1px solid var(--border);border-radius:11px;padding:13px;margin-top:10px}
+.rr{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--border);font-size:13px}
+.rr:last-child{border:none;font-weight:700;color:var(--blue)}
+
+/* STATS */
+.sg{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+.sc{background:var(--card);border:1px solid var(--border);border-radius:13px;padding:13px;box-shadow:var(--shadow);position:relative;overflow:hidden}
+.sv{font-family:'Orbitron',monospace;font-size:20px;font-weight:700;color:var(--blue)}
+.sl{font-size:10px;color:var(--muted);margin-top:2px}
+.si{position:absolute;top:12px;right:12px;font-size:20px;opacity:.25}
+
+/* BADGES */
+.bdg{display:inline-flex;align-items:center;padding:3px 9px;border-radius:20px;font-size:10px;font-weight:600}
+.bbl{background:rgba(0,85,255,0.08);color:var(--blue);border:1px solid rgba(0,85,255,0.18)}
+.bgn{background:rgba(0,200,83,0.08);color:#00a844;border:1px solid rgba(0,200,83,0.18)}
+.byw{background:rgba(255,179,0,0.1);color:#b37800;border:1px solid rgba(255,179,0,0.2)}
+.brd{background:rgba(255,23,68,0.08);color:#cc0033;border:1px solid rgba(255,23,68,0.18)}
+.bgr{background:rgba(90,106,154,0.08);color:var(--muted);border:1px solid rgba(90,106,154,0.18)}
+
+/* TABLEAU */
+.tbm{background:linear-gradient(135deg,var(--dark),#0c1840);border-radius:12px;padding:11px 14px;display:flex;justify-content:space-between;margin-bottom:8px}
+.tml{font-size:10px;color:rgba(255,255,255,0.35);margin-bottom:2px;text-transform:uppercase;letter-spacing:.5px}
+.tmv{font-family:'Orbitron',monospace;font-size:15px;font-weight:700;color:var(--cyan)}
+.tbg{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:10px 0}
+.tbc{background:#f0f4ff;border:1.5px solid var(--border);border-radius:10px;padding:6px 3px;text-align:center;cursor:pointer;transition:all .18s;position:relative;min-height:60px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}
+.tbc:active{transform:scale(.93)}
+.tbc.on{border-color:rgba(0,200,83,.5);background:rgba(0,200,83,.05)}
+.tbc.off{border-color:rgba(255,23,68,.5);background:rgba(255,23,68,.05)}
+.tbc.warn{border-color:rgba(255,179,0,.5);background:rgba(255,179,0,.05)}
+.tbc .ts{width:5px;height:5px;border-radius:50%;position:absolute;top:4px;right:4px}
+.tbc.on .ts{background:var(--green)}.tbc.off .ts{background:var(--red)}.tbc.warn .ts{background:var(--yellow)}
+
+/* CAMERA */
+.camw{position:relative;width:100%;border-radius:12px;overflow:hidden;background:#000;aspect-ratio:4/3;margin-bottom:10px}
+.camw video{width:100%;height:100%;object-fit:cover}
+.cambtn{position:absolute;bottom:14px;left:50%;transform:translateX(-50%);width:58px;height:58px;border-radius:50%;background:linear-gradient(135deg,var(--blue),var(--cyan));border:3px solid rgba(255,255,255,.8);cursor:pointer}
+.camf{position:absolute;inset:0;pointer-events:none}
+.camf::before,.camf::after{content:'';position:absolute;width:22px;height:22px;border-color:var(--cyan);border-style:solid;opacity:.8}
+.camf::before{top:10px;left:10px;border-width:2px 0 0 2px}
+.camf::after{top:10px;right:10px;border-width:2px 2px 0 0}
+.ai-load{display:flex;flex-direction:column;align-items:center;gap:10px;padding:24px;color:var(--muted)}
+.ai-sp{width:36px;height:36px;border:2.5px solid var(--border);border-top-color:var(--blue);border-radius:50%;animation:spin .8s linear infinite}
+.ai-p{font-size:10px;color:var(--blue);letter-spacing:2px;text-transform:uppercase;animation:op 1.5s ease infinite}
+@keyframes op{0%,100%{opacity:.3}50%{opacity:1}}
+.def-it{display:flex;gap:10px;padding:10px;background:#f0f4ff;border:1px solid var(--border);border-radius:10px;margin-bottom:7px;border-left:3px solid var(--border)}
+.def-it.crit{border-left-color:var(--red)}.def-it.warn{border-left-color:var(--yellow)}.def-it.ok{border-left-color:var(--green)}
+
+/* PHASE BARS */
+.phr{margin-bottom:10px}
+.pht{display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px;font-weight:500}
+.phb{background:#e6ecff;border-radius:6px;height:9px;overflow:hidden}
+.phf{height:100%;border-radius:6px;transition:width .6s}
+
+/* DEVIS */
+.dvir{display:grid;grid-template-columns:2fr 1fr 1fr 1fr auto;gap:5px;align-items:center;padding:8px;background:#f0f4ff;border:1px solid var(--border);border-radius:9px;margin-bottom:5px}
+.dvir input{padding:6px 8px;font-size:12px;border-radius:8px}
+.dvtb{background:linear-gradient(135deg,var(--dark),#0c1840);border-radius:12px;padding:14px 16px;margin-top:10px}
+.dtr{display:flex;justify-content:space-between;font-size:12px;padding:4px 0;color:rgba(255,255,255,.6)}
+.dtf{font-weight:700;font-size:15px;color:var(--cyan);border-top:1px solid rgba(255,255,255,.1);margin-top:7px;padding-top:9px;display:flex;justify-content:space-between}
+
+/* STOCK / CLIENTS */
+.ski{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px;margin-bottom:8px;box-shadow:var(--shadow);display:flex;align-items:center;gap:10px}
+.clc{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:13px;margin-bottom:9px;box-shadow:var(--shadow)}
+.qb{width:28px;height:28px;border-radius:8px;border:1.5px solid var(--border);background:#f0f4ff;color:var(--text);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-weight:700}
+.qb:active{background:var(--blue);color:#fff;border-color:var(--blue)}
+.av{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,var(--blue),var(--cyan));display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;color:#fff;flex-shrink:0}
+.edb{background:rgba(0,85,255,0.07);border:1px solid rgba(0,85,255,0.15);color:var(--blue);border-radius:7px;padding:4px 9px;font-size:11px;cursor:pointer;font-weight:600}
+
+/* CHANTIERS */
+.chc{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:13px;margin-bottom:9px;box-shadow:var(--shadow);cursor:pointer;border-left:3px solid var(--border)}
+.chc.urgente{border-left-color:var(--red)}.chc.haute{border-left-color:var(--yellow)}.chc.normale{border-left-color:var(--green)}
+
+/* ETIQUETTES */
+.etqc{background:#fff;border:1.5px solid var(--border);border-radius:10px;padding:10px 6px;text-align:center;position:relative}
+.etqc.sel{border-color:var(--blue);background:rgba(0,85,255,.03)}
+
+/* DIAGNOSTIC */
+.dopt{background:var(--card);border:1.5px solid var(--border);border-radius:10px;padding:11px 13px;margin-bottom:6px;cursor:pointer;font-size:13px;font-weight:500;transition:all .18s;display:flex;align-items:center;gap:8px}
+.dopt:active{transform:scale(.98)}
+.dopt.sel{border-color:var(--blue);background:rgba(0,85,255,.05);color:var(--blue)}
+.dsol{background:linear-gradient(135deg,rgba(0,85,255,.04),rgba(0,204,255,.04));border:1px solid rgba(0,85,255,.15);border-radius:12px;padding:15px;margin-top:10px}
+.dsn{width:22px;height:22px;border-radius:50%;background:var(--blue);color:#fff;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+
+/* NORMES */
+.noc{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:13px;margin-bottom:8px;box-shadow:var(--shadow)}
+.nor{font-family:'Orbitron',monospace;font-size:11px;color:var(--blue);font-weight:700;margin-bottom:3px}
+.not2{font-size:13px;font-weight:700;color:var(--dark);margin-bottom:4px}
+.notg{display:inline-block;background:rgba(0,85,255,.08);color:var(--blue);border-radius:5px;padding:2px 7px;font-size:10px;font-weight:600;margin:2px 2px 0}
+
+/* FICHES */
+.fch{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:13px;margin-bottom:9px;box-shadow:var(--shadow);cursor:pointer;transition:box-shadow .2s}
+.fch:hover{box-shadow:0 4px 20px rgba(0,85,255,.14)}
+.fl{display:inline-flex;align-items:center;gap:4px;border-radius:20px;padding:3px 9px;font-size:10px;font-weight:700}
+.fdeb{background:rgba(0,200,83,.1);color:#00a844;border:1px solid rgba(0,200,83,.2)}
+.fint{background:rgba(255,179,0,.1);color:#b37800;border:1px solid rgba(255,179,0,.2)}
+.fav{background:rgba(255,23,68,.1);color:#cc0033;border:1px solid rgba(255,23,68,.2)}
+
+/* QUIZ */
+.qop{background:#f0f4ff;border:1.5px solid var(--border);border-radius:10px;padding:11px 13px;margin-bottom:6px;cursor:pointer;font-size:13px;transition:all .18s}
+.qop.cor{border-color:var(--green);background:rgba(0,200,83,.08);color:#00a844}
+.qop.wrg{border-color:var(--red);background:rgba(255,23,68,.06);color:var(--red)}
+.pbr{height:5px;background:#e6ecff;border-radius:3px;overflow:hidden;margin-bottom:14px}
+.pbf{height:100%;background:linear-gradient(90deg,var(--blue),var(--cyan));border-radius:3px;transition:width .4s}
+
+/* MODAL */
+.mo{position:fixed;inset:0;background:rgba(8,16,43,.65);z-index:500;display:flex;align-items:flex-end;justify-content:center}
+.mob{background:var(--card);border-radius:20px 20px 0 0;padding:18px 18px calc(18px + var(--safe));width:100%;max-width:520px;max-height:92vh;overflow-y:auto;animation:su .25s ease}
+@keyframes su{from{transform:translateY(100%)}to{transform:none}}
+.moh{width:36px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 14px}
+.mob h3{font-size:15px;font-weight:700;margin-bottom:14px}
+.div{height:1px;background:var(--border);margin:12px 0}
+.wb{background:rgba(255,179,0,.07);border:1px solid rgba(255,179,0,.22);border-radius:9px;padding:9px 12px;font-size:12px;color:#b37800;margin-top:8px;line-height:1.5}
+.empty{text-align:center;padding:28px;color:var(--muted);font-size:13px}
+.previmg{width:100%;border-radius:10px;margin:8px 0;display:none}
+
+/* DASHBOARD */
+.dban{background:linear-gradient(135deg,var(--dark),#0c1840);border-radius:16px;padding:18px;margin-bottom:14px;position:relative;overflow:hidden}
+.dban::before{content:'';position:absolute;top:-30px;right:-30px;width:100px;height:100px;background:radial-gradient(circle,rgba(0,204,255,.15),transparent);border-radius:50%}
+.dbl{font-size:10px;color:rgba(255,255,255,.35);letter-spacing:2px;text-transform:uppercase;margin-bottom:4px}
+.dbt{font-size:20px;font-weight:800;color:#fff;margin-bottom:3px}
+.dbs{font-size:11px;color:rgba(255,255,255,.38)}
+.dbb{display:inline-flex;align-items:center;gap:5px;background:rgba(0,204,255,.12);border:1px solid rgba(0,204,255,.25);border-radius:20px;padding:4px 11px;font-size:10px;color:var(--cyan);margin-top:8px;font-weight:600}
+.qkg{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.qkb{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:13px;cursor:pointer;transition:all .18s;display:flex;align-items:center;gap:10px}
+.qkb:active{transform:scale(.97)}
+.qkt{font-size:12px;font-weight:600;color:var(--dark)}
+.qks{font-size:10px;color:var(--muted);margin-top:1px}
+
+/* PROFIL BANNER */
+.profban{background:rgba(255,179,0,.07);border:1px solid rgba(255,179,0,.22);border-radius:12px;padding:11px 14px;margin-bottom:12px;display:flex;align-items:center;gap:10px;cursor:pointer}
+.schema-canvas{width:100%;border-radius:10px;background:#f5f8ff;border:1px solid var(--border);display:block}
+</style>
+</head>
+<body>
+
+<div id="loader">
+  <div class="ld-icon">⚡</div>
+  <div class="ld-t">WB ELECTROTECH</div>
+  <div class="ld-s">v5.0 Pro</div>
+  <div class="ld-bar"><div class="ld-fill"></div></div>
+</div>
+
+<div id="app">
+  <header>
+    <div class="hlogo">
+      <div class="hicon">⚡</div>
+      <div class="htxt">WB ELECTROTECH</div>
+    </div>
+    <div class="hbadge" onclick="openMo('profil-mo')">
+      <div class="hdot"></div>
+      <span id="hbadge-txt">PRO</span>
+    </div>
+  </header>
+
+  <div class="content" id="mc">
+
+    <!-- HOME -->
+    <div class="page active" id="page-home">
+      <div class="dban">
+        <div class="dbl">Tableau de bord</div>
+        <div class="dbt" id="db-title">WB ElectroTech</div>
+        <div class="dbs" id="db-sub">Gestion électrotechnique professionnelle</div>
+        <div class="dbb"><span style="width:5px;height:5px;border-radius:50%;background:var(--cyan);display:inline-block"></span>Système actif</div>
+      </div>
+      <div id="home-pb"></div>
+      <div class="sg" id="home-stats"></div>
+      <div id="home-alerts"></div>
+      <div style="font-size:12px;font-weight:700;color:var(--dark);margin-bottom:10px">⚡ Accès rapide</div>
+      <div class="qkg" id="home-quick"></div>
+    </div>
+
+    <!-- CALCULS -->
+    <div class="page" id="page-calc">
+      <div class="ptitle">Calculateur Pro</div>
+      <div class="psub">8 outils de calcul électrotechnique</div>
+      <div class="tabs" id="calc-tabs">
+        <button class="tab active" onclick="sTab('calc','p',this)">Puissance</button>
+        <button class="tab" onclick="sTab('calc','c',this)">Câble</button>
+        <button class="tab" onclick="sTab('calc','d',this)">Disjoncteur</button>
+        <button class="tab" onclick="sTab('calc','b',this)">Bilan</button>
+        <button class="tab" onclick="sTab('calc','icc',this)">Icc</button>
+        <button class="tab" onclick="sTab('calc','mot',this)">Moteur</button>
+        <button class="tab" onclick="sTab('calc','tr',this)">Transfo</button>
+        <button class="tab" onclick="sTab('calc','co',this)">Cond.</button>
+      </div>
+      <div id="calc-p">
+        <div class="card"><div class="chd"><div class="cico cb">⚡</div><div><div class="ctitle">Puissance électrique</div><div class="csub">Active — Réactive — Apparente</div></div></div>
+        <div class="field"><label>Réseau</label><select id="c-res" onchange="cP()"><option value="mono">Monophasé 230V</option><option value="tri">Triphasé 400V</option></select></div>
+        <div class="r3"><div class="field"><label>Tension (V)</label><input type="number" id="c-u" value="230" oninput="cP()"></div><div class="field"><label>Intensité (A)</label><input type="number" id="c-i" value="10" oninput="cP()"></div><div class="field"><label>cos φ</label><input type="number" id="c-cos" value="0.8" step="0.01" min="0.1" max="1" oninput="cP()"></div></div>
+        <div class="rbox" id="res-p"></div></div>
+      </div>
+      <div id="calc-c" style="display:none"><div class="card"><div class="chd"><div class="cico cb">🔌</div><div><div class="ctitle">Câble — Section NFC 15-100</div><div class="csub">Cu & Al — Chute de tension</div></div></div>
+        <div class="r2"><div class="field"><label>Puissance (W)</label><input type="number" id="ca-p" value="3000" oninput="cC()"></div><div class="field"><label>Tension (V)</label><input type="number" id="ca-u" value="230" oninput="cC()"></div></div>
+        <div class="r2"><div class="field"><label>Longueur (m)</label><input type="number" id="ca-l" value="20" oninput="cC()"></div><div class="field"><label>Chute max (%)</label><input type="number" id="ca-ch" value="3" oninput="cC()"></div></div>
+        <div class="field"><label>Matériau</label><select id="ca-m" onchange="cC()"><option value="0.0172">Cuivre (Cu)</option><option value="0.028">Aluminium (Al)</option></select></div>
+        <div class="rbox" id="res-c"></div></div></div>
+      <div id="calc-d" style="display:none"><div class="card"><div class="chd"><div class="cico co">🔒</div><div><div class="ctitle">Calibre Disjoncteur</div><div class="csub">Protection NFC 15-100</div></div></div>
+        <div class="r3"><div class="field"><label>Puissance (W)</label><input type="number" id="d-p" value="5000" oninput="cD()"></div><div class="field"><label>Tension (V)</label><input type="number" id="d-u" value="230" oninput="cD()"></div><div class="field"><label>cos φ</label><input type="number" id="d-cos" value="0.8" step="0.01" oninput="cD()"></div></div>
+        <div class="rbox" id="res-d"></div></div></div>
+      <div id="calc-b" style="display:none"><div class="card"><div class="chd"><div class="cico cg">📊</div><div><div class="ctitle">Bilan de puissance TGBT</div><div class="csub">Foisonnement & DG</div></div></div>
+        <div class="field"><label>Foisonnement (%)</label><input type="number" id="bi-f" value="70" oninput="rBilan()"></div>
+        <div id="bilan-items"></div>
+        <div class="r3"><div class="field"><label>Nom</label><input type="text" id="bi-n" placeholder="Circuit"></div><div class="field"><label>Puissance (W)</label><input type="number" id="bi-p" value="1000"></div><div class="field"><label>cos φ</label><input type="number" id="bi-cos" value="0.8" step="0.01"></div></div>
+        <button class="btn bg2" onclick="addBilan()">+ Ajouter</button>
+        <div class="rbox" id="res-b" style="margin-top:10px"></div></div></div>
+      <div id="calc-icc" style="display:none"><div class="card"><div class="chd"><div class="cico cr">⚠️</div><div><div class="ctitle">Court-circuit IEC 60909</div><div class="csub">Icc max & min</div></div></div>
+        <div class="r2"><div class="field"><label>Un (V)</label><input type="number" id="icc-u" value="400" oninput="cIcc()"></div><div class="field"><label>Transfo Sn (kVA)</label><input type="number" id="icc-sn" value="630" oninput="cIcc()"></div></div>
+        <div class="r2"><div class="field"><label>Ucc (%)</label><input type="number" id="icc-uc" value="4" step="0.1" oninput="cIcc()"></div><div class="field"><label>Longueur (m)</label><input type="number" id="icc-l" value="50" oninput="cIcc()"></div></div>
+        <div class="r2"><div class="field"><label>Section (mm²)</label><input type="number" id="icc-s" value="95" oninput="cIcc()"></div><div class="field"><label>Matériau</label><select id="icc-m" onchange="cIcc()"><option value="0.0172">Cu</option><option value="0.028">Al</option></select></div></div>
+        <div class="rbox" id="res-icc"></div><div class="wb">⚠️ Icu disjoncteur doit être &gt; Icc max</div></div></div>
+      <div id="calc-mot" style="display:none"><div class="card"><div class="chd"><div class="cico cb">⚙️</div><div><div class="ctitle">Moteur électrique</div><div class="csub">Dimensionnement & protection</div></div></div>
+        <div class="r2"><div class="field"><label>Pn (kW)</label><input type="number" id="m-pn" value="7.5" step="0.1" oninput="cMot()"></div><div class="field"><label>Tension (V)</label><select id="m-u" onchange="cMot()"><option value="400">400V Tri</option><option value="230">230V Mono</option><option value="690">690V Tri</option></select></div></div>
+        <div class="r3"><div class="field"><label>η (%)</label><input type="number" id="m-eta" value="90" oninput="cMot()"></div><div class="field"><label>cos φ</label><input type="number" id="m-cos" value="0.85" step="0.01" oninput="cMot()"></div><div class="field"><label>Id/In</label><input type="number" id="m-id" value="6" step="0.1" oninput="cMot()"></div></div>
+        <div class="field"><label>Démarrage</label><select id="m-dem" onchange="cMot()"><option value="1">Direct (DOL)</option><option value="0.33">Étoile-Triangle</option><option value="0.5">Progressif</option><option value="1.1">Variateur VFD</option></select></div>
+        <div class="rbox" id="res-m"></div></div></div>
+      <div id="calc-tr" style="display:none"><div class="card"><div class="chd"><div class="cico cb">🔄</div><div><div class="ctitle">Transformateur</div><div class="csub">Dimensionnement & rendement</div></div></div>
+        <div class="r2"><div class="field"><label>Sn (kVA)</label><input type="number" id="tr-sn" value="630" oninput="cTr()"></div><div class="field"><label>U1 (V)</label><input type="number" id="tr-u1" value="20000" oninput="cTr()"></div></div>
+        <div class="r2"><div class="field"><label>U2 (V)</label><input type="number" id="tr-u2" value="400" oninput="cTr()"></div><div class="field"><label>Ucc (%)</label><input type="number" id="tr-uc" value="4" step="0.1" oninput="cTr()"></div></div>
+        <div class="r2"><div class="field"><label>P0 (W)</label><input type="number" id="tr-p0" value="1200" oninput="cTr()"></div><div class="field"><label>Pcc (W)</label><input type="number" id="tr-pc" value="8000" oninput="cTr()"></div></div>
+        <div class="field"><label>Taux charge (%)</label><input type="number" id="tr-ch" value="80" oninput="cTr()"></div>
+        <div class="rbox" id="res-tr"></div></div></div>
+      <div id="calc-co" style="display:none"><div class="card"><div class="chd"><div class="cico cg">🔋</div><div><div class="ctitle">Compensation réactive</div><div class="csub">Batterie condensateurs</div></div></div>
+        <div class="r2"><div class="field"><label>P (kW)</label><input type="number" id="co-p" value="100" oninput="cCond()"></div><div class="field"><label>Un (V)</label><input type="number" id="co-u" value="400" oninput="cCond()"></div></div>
+        <div class="r2"><div class="field"><label>cos φ initial</label><input type="number" id="co-c1" value="0.7" step="0.01" min="0.1" max="1" oninput="cCond()"></div><div class="field"><label>cos φ cible</label><input type="number" id="co-c2" value="0.95" step="0.01" min="0.1" max="1" oninput="cCond()"></div></div>
+        <div class="rbox" id="res-co"></div></div></div>
+    </div>
+
+    <!-- TABLEAU -->
+    <div class="page" id="page-tableau">
+      <div class="ptitle">Tableau Électrique</div>
+      <div class="psub">TGBT · Schéma · IA · Étiquettes · Équilibrage</div>
+      <div class="tabs">
+        <button class="tab active" onclick="sTab('tab','tgbt',this)">TGBT</button>
+        <button class="tab" onclick="sTab('tab','schema',this)">📐</button>
+        <button class="tab" onclick="sTab('tab','ia',this)">📷 IA</button>
+        <button class="tab" onclick="sTab('tab','etiq',this)">🏷️</button>
+        <button class="tab" onclick="sTab('tab','equil',this)">⚖️</button>
+      </div>
+      <div id="tab-tgbt">
+        <div class="card" style="padding:12px">
+          <div class="tbm"><div><div class="tml">Disjoncteur Général</div><div class="tmv" id="dg-lbl">0 A</div></div><div style="text-align:right"><div class="tml">TGBT</div><div style="font-family:Orbitron,monospace;font-size:11px;color:rgba(255,255,255,.35)">PRINCIPAL</div></div></div>
+          <div class="tbg" id="tb-grid"></div>
+          <button class="btn bg2" onclick="openMo('eq-mo')" style="margin-top:4px">+ Ajouter équipement</button>
+        </div>
+        <div id="eq-list"></div>
+      </div>
+      <div id="tab-schema" style="display:none"><div class="card"><div class="chd"><div class="cico cb">📐</div><div><div class="ctitle">Schéma unifilaire</div><div class="csub">Généré automatiquement — édition directe</div></div></div><canvas id="schema-canvas" class="schema-canvas" height="360"></canvas><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px;margin-top:12px"><button class="btn bp bsm" onclick="openEqModal('disj')">+ Disjoncteur</button><button class="btn bg2 bsm" onclick="openEqModal('dpn')">+ DPN</button><button class="btn bg2 bsm" onclick="openEqModal('ddr')">+ DDR</button><button class="btn bg2 bsm" onclick="openEqModal('contact')">+ Contacteur</button><button class="btn bg2 bsm" onclick="openEqModal('relais')">+ Relais</button><button class="btn bg2 bsm" onclick="openEqModal('fusible')">+ Fusible</button></div><div style="font-size:11px;color:var(--muted);margin-top:8px">Cliquez sur un composant dans le schéma pour modifier son équipement.</div><div style="display:flex;gap:7px;margin-top:10px;flex-wrap:wrap"><button class="btn bp bsm" onclick="genSchema()">🔄 Générer</button><button class="btn bg2 bsm" onclick="exportSchema()">📥 PNG</button><button class="btn bg2 bsm" onclick="exportSchemaPDF()">📄 PDF</button></div></div></div>
+      <div id="tab-ia" style="display:none"><div class="card"><div class="chd"><div class="cico cb">🤖</div><div><div class="ctitle">Analyse IA tableau</div><div class="csub">Détection défauts & conformité</div></div></div>
+        <p style="font-size:12px;color:var(--muted);margin-bottom:12px;line-height:1.7">Photographiez votre tableau. L'IA analyse les défauts avec un score de conformité /100.</p>
+        <div class="camw" id="ia-cw" style="display:none"><video id="ia-vid" autoplay playsinline muted></video><div class="camf"></div><button class="cambtn" onclick="capIA()"></button></div>
+        <canvas id="ia-cvs" style="display:none"></canvas>
+        <img id="ia-prev" class="previmg">
+        <div id="ia-btns"><button class="btn bp" onclick="startIACam()">📷 Activer caméra</button><button class="btn bg2" onclick="document.getElementById('ia-up').click()" style="margin-top:8px">📁 Choisir photo</button><input type="file" id="ia-up" accept="image/*" style="display:none" onchange="handleIAUp(event)"></div>
+        <div id="ia-launch" style="display:none;margin-top:10px"><button class="btn bia" onclick="launchIA()">🤖 Lancer l'analyse IA</button></div>
+        <div id="ia-res"></div></div></div>
+      <div id="tab-etiq" style="display:none"><div class="card"><div class="chd"><div class="cico cb">🏷️</div><div><div class="ctitle">Étiquettes tableau</div><div class="csub">Manuel · IA · Impression sélective</div></div></div>
+        <div class="tabs"><button class="tab active" onclick="sTab('etq','man',this)">✏️ Manuel</button><button class="tab" onclick="sTab('etq','ia',this)">📷 IA</button><button class="tab" onclick="sTab('etq','pr',this)">🖨️ Imprimer</button></div>
+        <div id="etq-man">
+          <div class="r2"><div class="field"><label>Nom circuit</label><input type="text" id="etq-n" placeholder="Lumière salon"></div><div class="field"><label>Calibre (A)</label><input type="number" id="etq-c" value="16"></div></div>
+          <div class="r2"><div class="field"><label>Phase</label><select id="etq-ph"><option>L1</option><option>L2</option><option>L3</option><option>Mono</option></select></div><div class="field"><label>Icône</label><select id="etq-ico"><option value="💡">💡 Lumière</option><option value="🔌">🔌 Prise</option><option value="❄️">❄️ Clim</option><option value="🍳">🍳 Cuisine</option><option value="🚿">🚿 Bain</option><option value="⚙️">⚙️ Moteur</option><option value="🖥️">🖥️ Info</option><option value="🔥">🔥 Chauffage</option><option value="🛡️">🛡️ DDR</option><option value="⚡">⚡ Général</option></select></div></div>
+          <button class="btn bp" onclick="addEtiq()">+ Ajouter</button>
+          <div id="etq-list" style="margin-top:12px"></div>
+          <div id="etq-act" style="display:none;margin-top:8px">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:12px;font-weight:600;color:var(--blue)"><input type="checkbox" id="etq-sa" onchange="etqSelAll(this)"> Tout sélectionner</label><span id="etq-sc" style="font-size:11px;color:var(--muted)">0 sél.</span></div>
+            <div style="display:flex;gap:7px"><button class="btn bp bsm" onclick="printEtqSel()">🖨️ Sél.</button><button class="btn bg2 bsm" onclick="printEtq()">🖨️ Tout</button><button class="btn br2 bsm" onclick="clearEtq()">🗑️</button></div>
+          </div>
+        </div>
+        <div id="etq-ia" style="display:none">
+          <div class="camw" id="etq-cw" style="display:none"><video id="etq-vid" autoplay playsinline muted></video><div class="camf"></div><button class="cambtn" onclick="capEtq()"></button></div>
+          <canvas id="etq-cvs" style="display:none"></canvas>
+          <img id="etq-prev" class="previmg">
+          <div id="etq-btns"><button class="btn bp" onclick="startEtqCam()">📷 Activer caméra</button><button class="btn bg2" onclick="document.getElementById('etq-up').click()" style="margin-top:8px">📁 Choisir photo</button><input type="file" id="etq-up" accept="image/*" style="display:none" onchange="handleEtqUp(event)"></div>
+          <div id="etq-launch" style="display:none;margin-top:10px"><button class="btn bia" onclick="launchEtqIA()">🤖 Générer étiquettes IA</button></div>
+          <div id="etq-ia-res"></div>
+          <div id="etq-ia-list" style="margin-top:10px"></div>
+          <div id="etq-ia-act" style="display:none;margin-top:8px">
+            <div style="display:flex;justify-content:space-between;margin-bottom:8px"><label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:12px;font-weight:600;color:var(--blue)"><input type="checkbox" id="etq-ia-sa" onchange="etqIaSelAll(this)"> Tout</label><span id="etq-ia-sc" style="font-size:11px;color:var(--muted)">0 sél.</span></div>
+            <div style="display:flex;gap:7px"><button class="btn bp bsm" onclick="printEtqIaSel()">🖨️ Sél.</button><button class="btn bg2 bsm" onclick="printEtqIaAll()">🖨️ Tout</button></div>
+          </div>
+        </div>
+        <div id="etq-pr" style="display:none"><div style="font-size:12px;color:var(--muted);margin-bottom:10px"><span id="etq-cnt">0</span> étiquette(s)</div><div id="etq-grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px"></div><div style="display:flex;gap:7px"><button class="btn bp" onclick="printEtq()">🖨️ Tout imprimer</button><button class="btn br2 bsm" onclick="clearEtq()" style="width:auto;padding:10px 14px;margin-top:4px">🗑️</button></div></div>
+      </div></div>
+      <div id="tab-equil" style="display:none"><div class="card"><div class="chd"><div class="cico cb">⚖️</div><div><div class="ctitle">Équilibrage de phases</div><div class="csub">Manuel · Par photo IA</div></div></div>
+        <div class="tabs"><button class="tab active" onclick="sTab('equil','man',this)">⚙️ Manuel</button><button class="tab" onclick="sTab('equil','photo',this)">📷 Par photo</button></div>
+        <div id="equil-man">
+          <div class="field"><label>Réseau</label><select id="bal-t" onchange="rCircuits()"><option value="mono">Monophasé</option><option value="tri">Triphasé</option></select></div>
+          <div id="circuits-list"></div>
+          <div class="r2"><div class="field"><label>Nom</label><input type="text" id="cir-n" placeholder="Circuit"></div><div class="field"><label>Puissance (W)</label><input type="number" id="cir-p" value="500"></div></div>
+          <button class="btn bg2" onclick="addCircuit()">+ Ajouter</button>
+          <button class="btn bp" onclick="calcEquil()" style="margin-top:8px">⚡ Calculer</button>
+          <div id="res-equil" style="margin-top:10px"></div>
+        </div>
+        <div id="equil-photo" style="display:none">
+          <p style="font-size:12px;color:var(--muted);margin-bottom:12px;line-height:1.7">Photographiez votre tableau triphasé. L'IA analyse la répartition des charges et donne des conseils clairs.</p>
+          <div class="camw" id="eq-cw" style="display:none"><video id="eq-vid" autoplay playsinline muted></video><div class="camf"></div><button class="cambtn" onclick="capEqPhoto()"></button></div>
+          <canvas id="eq-cvs" style="display:none"></canvas>
+          <img id="eq-prev" class="previmg">
+          <div id="eq-btns"><button class="btn bp" onclick="startEqCam()">📷 Activer caméra</button><button class="btn bg2" onclick="document.getElementById('eq-up').click()" style="margin-top:8px">📁 Choisir photo</button><input type="file" id="eq-up" accept="image/*" style="display:none" onchange="handleEqUp(event)"></div>
+          <div id="eq-launch" style="display:none;margin-top:10px"><button class="btn bia" onclick="launchEqIA()">🤖 Analyser l'équilibrage</button></div>
+          <div id="eq-ia-res"></div>
+        </div>
+      </div></div>
+    </div>
+
+    <!-- DIAGNOSTIC -->
+    <div class="page" id="page-diag">
+      <div class="ptitle">Diagnostic de Panne</div>
+      <div class="psub">IA guidée — Symptôme → Cause → Solution</div>
+      <div class="tabs"><button class="tab active" onclick="sTab('diag','guide',this)">🔍 Guidé</button><button class="tab" onclick="sTab('diag','ia',this)">🤖 IA Libre</button><button class="tab" onclick="sTab('diag','histo',this)">📋 Historique</button></div>
+      <div id="diag-guide"><div class="card"><div class="chd"><div class="cico co">🔍</div><div><div class="ctitle">Diagnostic guidé</div><div class="csub">Sélectionnez le symptôme</div></div></div><div id="diag-content"></div></div></div>
+      <div id="diag-ia" style="display:none"><div class="card"><div class="chd"><div class="cico" style="background:rgba(124,58,237,.08);border:1px solid rgba(124,58,237,.15);font-size:16px">🤖</div><div><div class="ctitle">Diagnostic IA libre</div><div class="csub">Décrivez votre problème</div></div></div>
+        <div class="field"><label>Type d'installation</label><select id="diag-inst"><option>Résidentiel</option><option>Industriel</option><option>Tertiaire</option></select></div>
+        <div class="field"><label>Décrivez le problème</label><textarea id="diag-desc" rows="4" placeholder="Ex: Le différentiel déclenche quand on allume la climatisation..."></textarea></div>
+        <div class="field"><label>Équipements concernés</label><input type="text" id="diag-eq" placeholder="Ex: Clim 2.5kW, câble 2.5mm²..."></div>
+        <button class="btn bia" onclick="launchDiagIA()">🤖 Analyser la panne</button>
+        <div id="diag-ia-res" style="margin-top:12px"></div></div></div>
+      <div id="diag-histo" style="display:none"><div id="diag-histo-list"></div></div>
+    </div>
+
+    <!-- NORMES -->
+    <div class="page" id="page-normes">
+      <div class="ptitle">Normes & Formation</div>
+      <div class="psub">IEC · NFC · Fiches tech · Quiz</div>
+      <div class="tabs"><button class="tab active" onclick="sTab('ref','nor',this)">📖 Normes</button><button class="tab" onclick="sTab('ref','fic',this)">📋 Fiches</button><button class="tab" onclick="sTab('ref','quiz',this)">🎓 Quiz</button><button class="tab" onclick="sTab('ref','rap',this)">📄 Rapport</button></div>
+      <div id="ref-nor"><div id="nor-list"></div></div>
+      <div id="ref-fic" style="display:none"><div id="fic-list"></div></div>
+      <div id="ref-quiz" style="display:none"><div id="quiz-wrap"></div></div>
+      <div id="ref-rap" style="display:none">
+        <div class="card"><div class="chd"><div class="cico cb">📄</div><div><div class="ctitle">Rapport d'intervention</div><div class="csub">PDF professionnel</div></div></div>
+          <div class="field"><label>Titre de l'intervention</label><input type="text" id="rp-t" placeholder="Installation tableau 63A — Villa..."></div>
+          <div class="r2"><div class="field"><label>Technicien</label><input type="text" id="rp-tech" placeholder="Votre nom"></div><div class="field"><label>Date</label><input type="date" id="rp-date"></div></div>
+          <div class="r2"><div class="field"><label>Client</label><input type="text" id="rp-cl" placeholder="Nom du client"></div><div class="field"><label>Adresse</label><input type="text" id="rp-adr" placeholder="Adresse du site"></div></div>
+          <div class="field"><label>Travaux effectués</label><textarea id="rp-trav" rows="3" placeholder="Décrire les travaux..."></textarea></div>
+          <div class="field"><label>Anomalies constatées</label><textarea id="rp-ano" rows="2" placeholder="Défauts, non-conformités..."></textarea></div>
+          <div class="field"><label>Recommandations</label><textarea id="rp-rec" rows="2" placeholder="Actions recommandées..."></textarea></div>
+          <div class="field"><label>Matériaux utilisés</label><textarea id="rp-mat" rows="2" placeholder="Liste des matériaux..."></textarea></div>
+          <div class="field"><label>Statut installation</label><select id="rp-stat"><option>✅ Conforme</option><option>⚠️ Partiellement conforme</option><option>🔴 Non conforme</option></select></div>
+          <button class="btn bp" onclick="genRapport()">📄 Générer PDF</button></div>
+      </div>
+    </div>
+
+    <!-- DEVIS -->
+    <div class="page" id="page-devis">
+      <div class="ptitle">Devis Professionnel</div>
+      <div class="psub">Devis technique — Bâtiment & Industrie</div>
+      <div id="dv-prof-ban" onclick="openMo('profil-mo')" style="cursor:pointer;background:#f0f4ff;border:1px solid var(--border);border-radius:12px;padding:11px 14px;margin-bottom:12px;display:flex;align-items:center;gap:10px">
+        <div id="dv-av" style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--blue),var(--cyan));display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:#fff;flex-shrink:0">?</div>
+        <div style="flex:1"><div style="font-size:13px;font-weight:600;color:var(--dark)" id="dv-pn">Configurer votre profil</div><div style="font-size:11px;color:var(--muted)" id="dv-pi">Nom, entreprise, coordonnées</div></div>
+        <span style="font-size:11px;color:var(--blue);font-weight:600">✏️</span>
+      </div>
+      <div class="sg"><div class="sc"><div class="si">📄</div><div class="sv" id="dv-tot">0</div><div class="sl">Total devis</div></div><div class="sc"><div class="si">💰</div><div class="sv" id="dv-ca">0</div><div class="sl">CA total</div></div></div>
+      <button class="btn bp" onclick="openNewDevis()" style="margin-bottom:12px">+ Nouveau devis</button>
+      <div id="dv-list"></div>
+    </div>
+
+    <!-- GESTION -->
+    <div class="page" id="page-gest">
+      <div class="ptitle">Gestion</div>
+      <div class="psub">Stock · Clients · Chantiers</div>
+      <div class="tabs"><button class="tab active" onclick="sTab('gest','stock',this)">📦 Stock</button><button class="tab" onclick="sTab('gest','clients',this)">👥 Clients</button><button class="tab" onclick="sTab('gest','chant',this)">🏗️ Chantiers</button></div>
+      <div id="gest-stock"><button class="btn bp" onclick="openMo('sk-mo')" style="margin-bottom:12px">+ Ajouter matériau</button><div id="sk-list"></div></div>
+      <div id="gest-clients" style="display:none"><button class="btn bp" onclick="openMo('cl-mo')" style="margin-bottom:12px">+ Nouveau client</button><div id="cl-list"></div></div>
+      <div id="gest-chant" style="display:none">
+        <div class="sg"><div class="sc"><div class="si">🏗️</div><div class="sv" id="ch-tot">0</div><div class="sl">Total</div></div><div class="sc"><div class="si">⚡</div><div class="sv" id="ch-enc">0</div><div class="sl">En cours</div></div></div>
+        <button class="btn bp" onclick="openMo('ch-mo')" style="margin-bottom:12px">+ Nouveau chantier</button>
+        <div id="ch-list"></div>
+      </div>
+    </div>
+
+  </div>
+
+  <nav class="bnav-wrap">
+    <button class="bn active" onclick="showPage('home',this)"><svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>Accueil</button>
+    <button class="bn" onclick="showPage('calc',this)"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="2"/><line x1="8" y1="9" x2="16" y2="9"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="12" y2="17"/></svg>Calculs</button>
+    <button class="bn" onclick="showPage('tableau',this)"><svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="18" rx="2"/><line x1="8" y1="3" x2="8" y2="21"/><line x1="2" y1="9" x2="8" y2="9"/></svg>Tableau</button>
+    <button class="bn" onclick="showPage('diag',this)"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>Diagnostic</button>
+    <button class="bn" onclick="showPage('normes',this)"><svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>Normes</button>
+    <button class="bn" onclick="showPage('devis',this)"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>Devis</button>
+    <button class="bn" onclick="showPage('gest',this)"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>Gestion</button>
+  </nav>
+</div>
+
+<!-- MODALS -->
+<div class="mo" id="eq-mo" style="display:none" onclick="closeMo('eq-mo')"><div class="mob" onclick="event.stopPropagation()"><div class="moh"></div><h3 id="eq-mo-t">Ajouter équipement</h3><div class="field"><label>Nom</label><input type="text" id="eq-n" placeholder="Ex: Lumière salon, K1M..."></div><div class="r2"><div class="field"><label>Type</label><select id="eq-t"><option value="disj">Disjoncteur</option><option value="dpn">DPN</option><option value="ddr">Différentiel</option><option value="contact">Contacteur</option><option value="relais">Relais</option><option value="fusible">Fusible</option><option value="autre">Autre</option></select></div><div class="field"><label>Calibre (A)</label><input type="number" id="eq-cal" value="16"></div></div><div class="r2"><div class="field"><label>Phase</label><select id="eq-ph"><option>L1</option><option>L2</option><option>L3</option><option>Mono</option><option>Triphasé</option></select></div><div class="field"><label>État</label><select id="eq-et"><option value="on">Actif ✅</option><option value="warn">Alerte ⚠️</option><option value="off">Déclenché 🔴</option></select></div></div><div class="field"><label>Notes</label><input type="text" id="eq-no" placeholder="Notes optionnelles"></div><button class="btn bp" onclick="saveEquip()">Enregistrer</button><button class="btn bg2" onclick="closeMo('eq-mo')" style="margin-top:6px">Annuler</button></div></div>
+<div class="mo" id="eq-det" style="display:none" onclick="closeMo('eq-det')"><div class="mob" onclick="event.stopPropagation()"><div class="moh"></div><div id="eq-det-c"></div></div></div>
+
+<div class="mo" id="dv-mo" style="display:none" onclick="closeMo('dv-mo')">
+  <div class="mob" onclick="event.stopPropagation()">
+    <div class="moh"></div><h3 id="dv-mo-t">Nouveau Devis</h3>
+    <div class="r2"><div class="field"><label>Client</label><input type="text" id="dv-cl" placeholder="Nom client"></div><div class="field"><label>Téléphone</label><input type="text" id="dv-tel" placeholder="+229..."></div></div>
+    <div class="r2"><div class="field"><label>Référence</label><input type="text" id="dv-ref" placeholder="REF-001"></div><div class="field"><label>Date</label><input type="date" id="dv-date"></div></div>
+    <div class="field"><label>Type travaux</label><select id="dv-type"><option>Installation électrique</option><option>Mise en conformité</option><option>Rénovation tableau</option><option>Câblage industriel</option><option>Dépannage</option><option>Éclairage</option><option>Autre</option></select></div>
+    <div class="div"></div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><div style="font-size:12px;font-weight:700">Lignes produits</div><div style="font-size:11px;color:var(--muted)">Devise <select id="dv-dev" style="width:auto;padding:4px 8px;font-size:11px;border-radius:8px;margin-left:4px" onchange="rDvTotal()"><option>FCFA</option><option>EUR</option><option>USD</option><option>XOF</option></select></div></div>
+    <div style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr auto;gap:4px;margin-bottom:5px;font-size:10px;color:var(--muted);font-weight:600;padding:0 4px"><span>Désignation</span><span>Qté</span><span>P.U.</span><span>Total</span><span></span></div>
+    <div id="dv-items"></div>
+    <button class="btn bg2 bsm" onclick="addDvItem()" style="margin:6px 0;width:100%">+ Ligne</button>
+    <div class="div"></div>
+    <div class="r2"><div class="field"><label>Main d'œuvre</label><input type="number" id="dv-mo" value="0" oninput="rDvTotal()"></div><div class="field"><label>Déplacement</label><input type="number" id="dv-dep" value="0" oninput="rDvTotal()"></div></div>
+    <div class="r2"><div class="field"><label>Remise (%)</label><input type="number" id="dv-rem" value="0" oninput="rDvTotal()"></div><div class="field"><label>TVA (%)</label><input type="number" id="dv-tva" value="18" oninput="rDvTotal()"></div></div>
+    <div id="dv-total-bar" class="dvtb" style="margin-bottom:10px"></div>
+    <div class="field"><label>Statut</label><select id="dv-stat"><option>En attente</option><option>Accepté</option><option>Refusé</option><option>Facturé</option></select></div>
+    <div class="field"><label>Notes / Conditions</label><textarea id="dv-notes" rows="2" placeholder="Conditions de paiement..."></textarea></div>
+    <button class="btn bp" onclick="saveDevis()">💾 Enregistrer</button>
+    <button class="btn bg2" onclick="closeMo('dv-mo')" style="margin-top:6px">Annuler</button>
+  </div>
+</div>
+
+<div class="mo" id="sk-mo" style="display:none" onclick="closeMo('sk-mo')"><div class="mob" onclick="event.stopPropagation()"><div class="moh"></div><h3 id="sk-mo-t">Matériau</h3><div class="field"><label>Désignation</label><input type="text" id="sk-n" placeholder="Ex: Disjoncteur 16A"></div><div class="r2"><div class="field"><label>Référence</label><input type="text" id="sk-r" placeholder="REF-001"></div><div class="field"><label>Unité</label><select id="sk-u"><option>pièce</option><option>mètre</option><option>rouleau</option><option>boite</option><option>kg</option></select></div></div><div class="r2"><div class="field"><label>Quantité</label><input type="number" id="sk-q" value="10"></div><div class="field"><label>Seuil alerte</label><input type="number" id="sk-s" value="3"></div></div><div class="r2"><div class="field"><label>Prix unitaire</label><input type="number" id="sk-pu" value="0"></div><div class="field"><label>Devise</label><select id="sk-dev"><option>FCFA</option><option>EUR</option><option>USD</option></select></div></div><div class="field"><label>Fournisseur</label><input type="text" id="sk-four" placeholder="Fournisseur"></div><button class="btn bp" onclick="saveStock()">Enregistrer</button><button class="btn bg2" onclick="closeMo('sk-mo')" style="margin-top:6px">Annuler</button></div></div>
+
+<div class="mo" id="cl-mo" style="display:none" onclick="closeMo('cl-mo')"><div class="mob" onclick="event.stopPropagation()"><div class="moh"></div><h3 id="cl-mo-t">Fiche Client</h3><div class="r2"><div class="field"><label>Nom complet</label><input type="text" id="cl-n" placeholder="Jean Dupont"></div><div class="field"><label>Téléphone</label><input type="text" id="cl-t" placeholder="+229..."></div></div><div class="field"><label>Email</label><input type="text" id="cl-e" placeholder="email@..."></div><div class="field"><label>Adresse</label><input type="text" id="cl-adr" placeholder="Adresse complète"></div><div class="field"><label>Type de demande</label><select id="cl-ty"><option>Installation électrique neuve</option><option>Mise en conformité</option><option>Dépannage</option><option>Audit tableau</option><option>Câblage industriel</option><option>Autre</option></select></div><div class="field"><label>Description</label><textarea id="cl-d" rows="2" placeholder="Besoin du client..."></textarea></div><div class="field"><label>Note</label><div style="display:flex;gap:8px;margin-top:4px" id="star-row"><span style="font-size:26px;cursor:pointer;opacity:.25;color:var(--blue);transition:.2s" onclick="setStar(1)">★</span><span style="font-size:26px;cursor:pointer;opacity:.25;color:var(--blue);transition:.2s" onclick="setStar(2)">★</span><span style="font-size:26px;cursor:pointer;opacity:.25;color:var(--blue);transition:.2s" onclick="setStar(3)">★</span><span style="font-size:26px;cursor:pointer;opacity:.25;color:var(--blue);transition:.2s" onclick="setStar(4)">★</span><span style="font-size:26px;cursor:pointer;opacity:.25;color:var(--blue);transition:.2s" onclick="setStar(5)">★</span></div></div><div class="field"><label>Avis</label><textarea id="cl-a" rows="2" placeholder="Commentaire..."></textarea></div><button class="btn bp" onclick="saveClient()">Enregistrer</button><button class="btn bg2" onclick="closeMo('cl-mo')" style="margin-top:6px">Annuler</button></div></div>
+
+<div class="mo" id="ch-mo" style="display:none" onclick="closeMo('ch-mo')"><div class="mob" onclick="event.stopPropagation()"><div class="moh"></div><h3 id="ch-mo-t">Chantier</h3><div class="field"><label>Nom du chantier</label><input type="text" id="ch-nom" placeholder="Ex: Villa Akpakpa..."></div><div class="r2"><div class="field"><label>Technicien</label><input type="text" id="ch-tech" placeholder="Nom"></div><div class="field"><label>Client</label><input type="text" id="ch-cl" placeholder="Client"></div></div><div class="field"><label>Adresse</label><input type="text" id="ch-adr" placeholder="Adresse complète"></div><div class="r2"><div class="field"><label>Début</label><input type="date" id="ch-deb"></div><div class="field"><label>Fin prévue</label><input type="date" id="ch-fin"></div></div><div class="r2"><div class="field"><label>Type</label><select id="ch-type"><option>Domestique</option><option>Industriel</option><option>Tertiaire</option></select></div><div class="field"><label>Travaux</label><select id="ch-trav"><option>Installation neuve</option><option>Rénovation</option><option>Conformité</option><option>Dépannage</option><option>Câblage industriel</option><option>Automatisme</option><option>Autre</option></select></div></div><div class="field"><label>Priorité</label><select id="ch-pri"><option value="normale">🟢 Normale</option><option value="haute">🟡 Haute</option><option value="urgente">🔴 Urgente</option></select></div><div class="field"><label>Description</label><textarea id="ch-desc" rows="2" placeholder="Détail des travaux..."></textarea></div><div class="field"><label>Plan de réalisation</label><textarea id="ch-plan" rows="2" placeholder="Phases du projet..."></textarea></div><div class="field"><label>Recommandations client</label><textarea id="ch-rec" rows="2" placeholder="Désirs du client..."></textarea></div><button class="btn bp" onclick="saveCh()">✅ Créer</button><button class="btn bg2" onclick="closeMo('ch-mo')" style="margin-top:6px">Annuler</button></div></div>
+
+<div class="mo" id="ch-det" style="display:none" onclick="closeMo('ch-det')"><div class="mob" onclick="event.stopPropagation()"><div class="moh"></div><div id="ch-det-c"></div></div></div>
+
+<div class="mo" id="profil-mo" style="display:none" onclick="closeMo('profil-mo')">
+  <div class="mob" onclick="event.stopPropagation()">
+    <div class="moh"></div><h3>👤 Profil Technicien</h3>
+    <p style="font-size:12px;color:var(--muted);margin-bottom:14px;line-height:1.6">Ces informations apparaîtront sur vos devis et rapports.</p>
+    <div class="r2"><div class="field"><label>Prénom & Nom *</label><input type="text" id="pr-nom" placeholder="Jean-Baptiste Dupont"></div><div class="field"><label>Titre / Fonction</label><input type="text" id="pr-titre" placeholder="Électrotechnicien..."></div></div>
+    <div class="field"><label>Entreprise / Société</label><input type="text" id="pr-ent" placeholder="WB ElectroTech SARL"></div>
+    <div class="r2"><div class="field"><label>Téléphone</label><input type="text" id="pr-tel" placeholder="+229 97 00 00 00"></div><div class="field"><label>WhatsApp</label><input type="text" id="pr-wa" placeholder="+229 97 00 00 00"></div></div>
+    <div class="field"><label>Email</label><input type="text" id="pr-email" placeholder="contact@..."></div>
+    <div class="field"><label>Adresse</label><input type="text" id="pr-adr" placeholder="Cotonou, Bénin"></div>
+    <div class="r2"><div class="field"><label>N° Agrément</label><input type="text" id="pr-agr" placeholder="AGR-2024-001"></div><div class="field"><label>RCCM / NIF</label><input type="text" id="pr-rccm" placeholder="RB/COT/24/B/001"></div></div>
+    <div class="field"><label>Spécialités</label><input type="text" id="pr-spec" placeholder="BT/HTA, Industriel, Auto..."></div>
+    <div class="field"><label>Slogan</label><input type="text" id="pr-slo" placeholder="Expert en installations électriques"></div>
+    <button class="btn bp" onclick="saveProfil()">💾 Enregistrer le profil</button>
+    <button class="btn bg2" onclick="closeMo('profil-mo')" style="margin-top:6px">Annuler</button>
+  </div>
+</div>
+
+<div class="mo" id="fiche-mo" style="display:none" onclick="closeMo('fiche-mo')"><div class="mob" onclick="event.stopPropagation()"><div class="moh"></div><div id="fiche-mo-c"></div><button class="btn bg2" onclick="closeMo('fiche-mo')" style="margin-top:10px">Fermer</button></div></div>
+
+<script>
+// ════ STORAGE ════
+const S=(k,v)=>{try{localStorage.setItem('wb5_'+k,JSON.stringify(v));}catch(e){}};
+const L=(k,d)=>{try{const v=localStorage.getItem('wb5_'+k);return v?JSON.parse(v):d;}catch(e){return d;}};
+let equip=[],devis=[],stock=[],clients=[],chants=[],circuits=[],etiq=[],bilan=[],diagH=[],dvItems=[];
+let profil={},starVal=0,editId=null,iaEtqList=[];
+let captIA=null,captEtq=null,captEq=null;
+
+// ════ BOOT ════
+document.addEventListener('DOMContentLoaded',function(){
+  setTimeout(function(){
+    document.getElementById('loader').classList.add('hide');
+    document.getElementById('app').style.display='flex';
+    try{
+      equip=L('equip',[]);devis=L('devis',[]);
+      stock=L('stock',[{id:'s1',nom:'Disjoncteur 16A',ref:'DIS-16',qty:8,seuil:3,unite:'pièce',pu:3500,devise:'FCFA',four:''},{id:'s2',nom:'Câble HO7V 2.5mm²',ref:'CAB-25',qty:45,seuil:10,unite:'mètre',pu:800,devise:'FCFA',four:''}]);
+      clients=L('clients',[]);chants=L('chants',[]);circuits=L('circuits',[]);etiq=L('etiq',[]);bilan=L('bilan',[]);diagH=L('diag',[]);
+      profil=L('profil',{});
+      initCalcs();rHome();rTableau();rDevis();rStock();rClients();rChants();rCircuits();rEtqList();rBilan();
+      rProfil();renderDiag();renderNormes();renderFiches();renderQuiz();
+    }catch(e){console.error(e);}
+  },1400);
+});
+
+// ════ NAV ════
+function showPage(id,btn){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.bn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  if(btn)btn.classList.add('active');
+  document.getElementById('mc').scrollTop=0;
+}
+function navToPage(pageId){
+  const indexMap={home:0,calc:1,tableau:2,diag:3,normes:4,devis:5,gest:6};
+  const btn=document.querySelectorAll('.bn')[indexMap[pageId]];
+  showPage(pageId,btn);
+}
+function sTab(g,id,btn){
+  const m={calc:['p','c','d','b','icc','mot','tr','co'],tab:['tgbt','schema','ia','etiq','equil'],etq:['man','ia','pr'],equil:['man','photo'],diag:['guide','ia','histo'],ref:['nor','fic','quiz','rap'],gest:['stock','clients','chant']};
+  (m[g]||[]).forEach(t=>{const e=document.getElementById(g+'-'+t)||document.getElementById('tab-'+t)||document.getElementById('equil-'+t)||document.getElementById('diag-'+t)||document.getElementById('ref-'+t)||document.getElementById('gest-'+t)||document.getElementById('etq-'+t);if(e)e.style.display='none';});
+  const el=document.getElementById(g+'-'+id)||document.getElementById('tab-'+id)||document.getElementById('equil-'+id)||document.getElementById('diag-'+id)||document.getElementById('ref-'+id)||document.getElementById('gest-'+id)||document.getElementById('etq-'+id);
+  if(el)el.style.display='block';
+  if(btn){btn.closest('.tabs').querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));btn.classList.add('active');}
+  if(g==='tab'&&id==='schema')setTimeout(genSchema,100);
+  if(g==='diag'&&id==='histo')rDiagH();
+  if(g==='ref'&&id==='nor')renderNormes();
+  if(g==='ref'&&id==='fic')renderFiches();
+  if(g==='ref'&&id==='quiz')renderQuiz();
+}
+function openMo(id){
+  if(id==='profil-mo'){fillProfil();document.getElementById('profil-mo').style.display='flex';return;}
+  if(id==='dv-mo'&&!editId){resetDv();}
+  if(id==='eq-mo'&&!editId){document.getElementById('eq-mo-t').textContent='Ajouter équipement';document.getElementById('eq-n').value='';document.getElementById('eq-t').value='disj';document.getElementById('eq-cal').value='16';document.getElementById('eq-ph').value='L1';document.getElementById('eq-et').value='on';document.getElementById('eq-no').value='';}
+  if(id==='sk-mo'&&!editId){resetSk();}
+  if(id==='cl-mo'&&!editId){resetCl();}
+  if(id==='ch-mo'&&!editId){document.getElementById('ch-mo-t').textContent='Nouveau Chantier';}
+  document.getElementById(id).style.display='flex';
+}
+function closeMo(id){document.getElementById(id).style.display='none';editId=null;}
+function openNewDevis(){editId=null;document.getElementById('dv-mo-t').textContent='Nouveau Devis';resetDv();document.getElementById('dv-mo').style.display='flex';}
+
+// ════ HOME ════
+function rHome(){
+  const alr=stock.filter(s=>s.qty<=s.seuil).length,enc=chants.filter(c=>c.statut==='en_cours').length;
+  if(profil.nom){document.getElementById('db-title').textContent=profil.entreprise||profil.nom;document.getElementById('db-sub').textContent=profil.nom+(profil.titre?' — '+profil.titre:'');}
+  const pb=document.getElementById('home-pb');
+  pb.innerHTML=profil.nom?'':'<div class="profban" onclick="openMo(\'profil-mo\')"><span style="font-size:20px">👤</span><div style="flex:1"><div style="font-size:12px;font-weight:700;color:#b37800">Profil non configuré</div><div style="font-size:11px;color:var(--muted)">Ajoutez votre nom pour personnaliser vos devis</div></div><span class="edb">Configurer</span></div>';
+  document.getElementById('home-stats').innerHTML=`<div class="sc"><div class="si">📄</div><div class="sv">${devis.length}</div><div class="sl">Devis</div></div><div class="sc"><div class="si">👥</div><div class="sv">${clients.length}</div><div class="sl">Clients</div></div><div class="sc"><div class="si">🏗️</div><div class="sv">${enc}</div><div class="sl">Chantiers actifs</div></div><div class="sc"><div class="si">⚠️</div><div class="sv">${alr}</div><div class="sl">Alertes stock</div></div>`;
+  document.getElementById('home-alerts').innerHTML=alr>0?`<div style="background:rgba(255,179,0,.07);border:1px solid rgba(255,179,0,.22);border-radius:12px;padding:11px 14px;margin-bottom:12px;display:flex;align-items:center;gap:10px"><span style="font-size:20px">⚠️</span><div><div style="font-size:12px;font-weight:700;color:#b37800">${alr} matériau(x) en stock bas</div></div></div>`:'';
+  const bns=document.querySelectorAll('.bn');
+  document.getElementById('home-quick').innerHTML=`
+    <div class="qkb" onclick="navToPage('calc')"><span style="font-size:20px">🔢</span><div><div class="qkt">Calculs Pro</div><div class="qks">8 outils</div></div></div>
+    <div class="qkb" onclick="navToPage('diag')"><span style="font-size:20px">🔍</span><div><div class="qkt">Diagnostic</div><div class="qks">Guidé par IA</div></div></div>
+    <div class="qkb" onclick="navToPage('tableau')"><span style="font-size:20px">🔌</span><div><div class="qkt">Tableau TGBT</div><div class="qks">Schéma & IA</div></div></div>
+    <div class="qkb" onclick="navToPage('normes')"><span style="font-size:20px">📖</span><div><div class="qkt">Normes & Quiz</div><div class="qks">IEC · NFC 15-100</div></div></div>
+    <div class="qkb" onclick="openNewDevis();navToPage('devis')"><span style="font-size:20px">📄</span><div><div class="qkt">Nouveau devis</div><div class="qks">Devis professionnel</div></div></div>
+    <div class="qkb" onclick="navToPage('gest')"><span style="font-size:20px">🏗️</span><div><div class="qkt">Chantiers</div><div class="qks">${enc} en cours</div></div></div>`;
+}
+
+// ════ PROFIL ════
+function fillProfil(){['nom','titre','ent','tel','wa','email','adr','agr','rccm','spec','slo'].forEach(k=>{const el=document.getElementById('pr-'+k);if(el)el.value=profil[k]||'';});}
+function saveProfil(){
+  profil={nom:v('pr-nom'),titre:v('pr-titre'),entreprise:v('pr-ent'),tel:v('pr-tel'),whatsapp:v('pr-wa'),email:v('pr-email'),adresse:v('pr-adr'),agrement:v('pr-agr'),rccm:v('pr-rccm'),specialites:v('pr-spec'),slogan:v('pr-slo')};
+  S('profil',profil);closeMo('profil-mo');rProfil();rHome();
+}
+function v(id){const e=document.getElementById(id);return e?e.value.trim():'';}
+function rProfil(){
+  const p=profil;
+  document.getElementById('hbadge-txt').textContent=p.nom?p.nom.split(' ')[0]:'PRO';
+  const av=document.getElementById('dv-av'),pn=document.getElementById('dv-pn'),pi=document.getElementById('dv-pi');
+  if(p.nom){av.textContent=p.nom.charAt(0).toUpperCase();pn.textContent=p.nom+(p.titre?' — '+p.titre:'');pi.textContent=(p.entreprise||'')+(p.tel?' • '+p.tel:'')+(p.agrement?' • '+p.agrement:'');}
+}
+
+// ════ CALCULS ════
+function initCalcs(){cP();cC();cD();cIcc();cMot();cTr();cCond();}
+function rr(html){return html;}
+function cP(){const U=+v2('c-u')||230,I=+v2('c-i')||0,cos=+v2('c-cos')||0.8,tri=document.getElementById('c-res').value==='tri';const Pa=+(tri?Math.sqrt(3)*U*I*cos:U*I*cos).toFixed(1),Pq=+(Math.sqrt(1-cos*cos)/cos*(Pa||0)).toFixed(1),Ps=+(tri?Math.sqrt(3)*U*I:U*I).toFixed(1);el('res-p',`<div class="rr"><span>Puissance Active P</span><b>${Pa} W</b></div><div class="rr"><span>Puissance Réactive Q</span><b>${Pq} VAR</b></div><div class="rr"><span>Puissance Apparente S</span><b>${Ps} VA</b></div><div class="rr"><span>Résumé</span><b>${(Pa/1000).toFixed(2)} kW | ${(Ps/1000).toFixed(2)} kVA</b></div>`);}
+function cC(){const P=+v2('ca-p')||0,U=+v2('ca-u')||230,L2=+v2('ca-l')||0,ch=+v2('ca-ch')||3,rho=+v2('ca-m')||0.0172;const I=P/U,S=(2*rho*L2*I)/(ch/100*U);const ns=[1.5,2.5,4,6,10,16,25,35,50],s=ns.find(x=>x>=S)||50;const im=[14,21,30,40,54,73,96,116,141],imax=im[ns.indexOf(s)]||200;el('res-c',`<div class="rr"><span>Intensité</span><b>${I.toFixed(2)} A</b></div><div class="rr"><span>Section théorique</span><b>${S.toFixed(2)} mm²</b></div><div class="rr"><span>Section normalisée</span><b>${s} mm²</b></div><div class="rr"><span>Imax admissible</span><b>${imax} A</b></div>`);}
+function cD(){const P=+v2('d-p')||0,U=+v2('d-u')||230,cos=+v2('d-cos')||0.8;const I=P/(U*cos),cs=[6,10,16,20,25,32,40,50,63,80,100,125],cal=cs.find(c=>c>=I*1.25)||125;el('res-d',`<div class="rr"><span>Intensité nominale</span><b>${I.toFixed(2)} A</b></div><div class="rr"><span>Avec marge 25%</span><b>${(I*1.25).toFixed(2)} A</b></div><div class="rr"><span>Calibre recommandé</span><b style="font-size:18px">${cal} A</b></div>`);}
+function cIcc(){const U=+v2('icc-u')||400,Sn=+v2('icc-sn')||630,uc=+v2('icc-uc')||4,L2=+v2('icc-l')||50,S=+v2('icc-s')||95,rho=+v2('icc-m')||0.0172;const Zt=uc/100*(U*U/(Sn*1000)),Zc=rho*L2/S;const Imax=U/(Math.sqrt(3)*(Zt+Zc/2))/1000,Imin=U/(Math.sqrt(3)*(Zt+Zc))/1000;el('res-icc',`<div class="rr"><span>Impédance transfo Zt</span><b>${(Zt*1000).toFixed(2)} mΩ</b></div><div class="rr"><span>Impédance câble Zc</span><b>${(Zc*1000).toFixed(2)} mΩ</b></div><div class="rr"><span>Icc max</span><b style="color:var(--red)">${Imax.toFixed(2)} kA</b></div><div class="rr"><span>Icc min</span><b>${Imin.toFixed(2)} kA</b></div>`);}
+function cMot(){const Pn=+v2('m-pn')||7.5,U=+v2('m-u')||400,eta=(+v2('m-eta')||90)/100,cos=+v2('m-cos')||0.85,IdIn=+v2('m-id')||6,kDem=+document.getElementById('m-dem').value||1;const tri=U>230,In=Pn*1000/(eta*(tri?Math.sqrt(3)*U*cos:U*cos)),Id=In*IdIn*kDem;const cs=[6,10,16,20,25,32,40,50,63,80,100],cal=cs.find(c=>c>=In*1.25)||125;el('res-m',`<div class="rr"><span>Courant nominal In</span><b>${In.toFixed(2)} A</b></div><div class="rr"><span>Courant démarrage Id</span><b style="color:var(--orange)">${Id.toFixed(1)} A</b></div><div class="rr"><span>Disjoncteur moteur</span><b>${cal} A</b></div><div class="rr"><span>Relais thermique</span><b>${(In*1.05).toFixed(2)}—${(In*1.15).toFixed(2)} A</b></div>`);}
+function cTr(){const Sn=+v2('tr-sn')||630,U1=+v2('tr-u1')||20000,U2=+v2('tr-u2')||400,uc=+v2('tr-uc')||4,P0=+v2('tr-p0')||1200,Pcc=+v2('tr-pc')||8000,ch=(+v2('tr-ch')||80)/100;const rap=U1/U2,I2n=Sn*1000/(Math.sqrt(3)*U2),prt=P0+ch*ch*Pcc,eta=(ch*Sn*1000-prt)/(ch*Sn*1000)*100;el('res-tr',`<div class="rr"><span>Rapport de transformation</span><b>${rap.toFixed(1)}</b></div><div class="rr"><span>Courant I2n</span><b>${I2n.toFixed(1)} A</b></div><div class="rr"><span>Pertes totales</span><b>${prt.toFixed(0)} W</b></div><div class="rr"><span>Rendement η</span><b>${eta.toFixed(2)} %</b></div>`);}
+function cCond(){const P=+v2('co-p')||100,U=+v2('co-u')||400,c1=+v2('co-c1')||0.7,c2=+v2('co-c2')||0.95;const Q1=P*Math.sqrt(1-c1*c1)/c1,Q2=P*Math.sqrt(1-c2*c2)/c2,Qc=Q1-Q2,C=Qc*1000/(2*Math.PI*50*U*U)*1e6;el('res-co',`<div class="rr"><span>Puissance réactive Q1</span><b>${Q1.toFixed(2)} kVAR</b></div><div class="rr"><span>Puissance cible Q2</span><b>${Q2.toFixed(2)} kVAR</b></div><div class="rr"><span>Puissance condensateurs Qc</span><b style="color:var(--green)">${Qc.toFixed(2)} kVAR</b></div><div class="rr"><span>Capacité C</span><b>${C.toFixed(1)} µF</b></div>`);}
+function v2(id){const e=document.getElementById(id);return e?e.value:0;}
+function el(id,html){const e=document.getElementById(id);if(e)e.innerHTML=html;}
+function addBilan(){bilan.push({n:v2('bi-n')||'Circuit',p:+v2('bi-p')||0,cos:+v2('bi-cos')||0.8});S('bilan',bilan);document.getElementById('bi-n').value='';rBilan();}
+function rBilan(){el('bilan-items',bilan.map((x,i)=>`<div class="rr" style="background:#f0f4ff;border-radius:7px;padding:5px 10px;margin-bottom:4px"><span>${x.n}</span><span>${x.p}W <span onclick="bilan.splice(${i},1);S('bilan',bilan);rBilan()" style="cursor:pointer;color:var(--red);padding:0 4px">×</span></span></div>`).join(''));if(!bilan.length){el('res-b','<p style="color:var(--muted);font-size:12px;text-align:center">Ajoutez des circuits</p>');return;}const fois=(+v2('bi-f')||70)/100,Pt=bilan.reduce((s,x)=>s+x.p,0),Pf=Pt*fois,Ig=Pf/(230*0.8),cs=[32,40,63,80,100,125],cal=cs.find(c=>c>=Ig*1.25)||125;el('res-b',`<div class="rr"><span>Puissance installée</span><b>${Pt} W</b></div><div class="rr"><span>Avec foisonnement</span><b>${Pf.toFixed(0)} W</b></div><div class="rr"><span>Intensité totale</span><b>${Ig.toFixed(1)} A</b></div><div class="rr"><span>Disjoncteur général</span><b>${cal} A</b></div>`);}
+
+// ════ EQUIPEMENTS ════
+const tI={disj:'⚡',dpn:'🔲',ddr:'🛡️',agcp:'⚡',contact:'⚙️',relais:'🔀',fusible:'🔩',autre:'🔌'};
+const tL={disj:'Disjoncteur',dpn:'DPN',ddr:'Différentiel',agcp:'AGCP',contact:'Contacteur',relais:'Relais',fusible:'Fusible',autre:'Autre'};
+
+function buildTableauHierarchy(equipements){
+  const agcp={id:'agcp-0',nom:'Disjoncteur de Branchement (D/0)',type:'agcp',calibre:30,sensibilite:'500mA',section:'10mm²',phase:'Triphasé',pu:6};
+  const circuits=equipements.slice();
+  const typeA=circuits.filter(c=>c.nom.toLowerCase().match(/plaque|lave|ev|recharge|four|chauffe|cuisiniere|cuisine|vmc/)||c.cal>=25);
+  const typeAC=circuits.filter(c=>!typeA.includes(c));
+  const groups=[];
+  let qIndex=1;
+  let djIndex=1;
+  const buildGroup=(list,kind)=>{
+    for(let i=0;i<list.length;i+=8){
+      const chunk=list.slice(i,i+8);
+      const circuits=chunk.map((c,idx)=>({
+        id:c.id||'dj'+(djIndex+idx),
+        displayId:'DJ'+(djIndex+idx),
+        nom:c.nom,
+        calibre:c.cal,
+        phase:c.phase,
+        section:c.section|| (c.cal<=10?'1.5mm²':c.cal<=16?'2.5mm²':'6mm²'),
+        terminaux:[{id:(c.id||'dj'+(djIndex+idx))+'_t1',nom:c.nom,localisation:c.notes||'',type:'point'}]
+      }));
+      groups.push({
+        id:'q'+qIndex,
+        num:'Q'+qIndex,
+        type:kind,
+        calibre:40,
+        sensibilite:'30mA',
+        ddr:{nom:'Q'+qIndex,calibre:40,sensibilite:30,type:kind},
+        circuits
+      });
+      djIndex += chunk.length;
+      qIndex++;
+    }
+  };
+  buildGroup(typeA,'Type A');
+  buildGroup(typeAC,'Type AC');
+  return {agcp,rangees:groups};
+}
+
+function structureRangees(equipements){
+  return buildTableauHierarchy(equipements).rangees;
+}
+function saveEquip(){const eq={id:editId||'e'+Date.now(),nom:v2('eq-n')||'Équipement',type:v2('eq-t')||'disj',cal:+v2('eq-cal')||16,phase:v2('eq-ph')||'L1',etat:v2('eq-et')||'on',notes:v2('eq-no')||''};if(editId){const i=equip.findIndex(x=>x.id===editId);if(i>=0)equip[i]=eq;}else equip.push(eq);S('equip',equip);closeMo('eq-mo');rTableau();rHome();}
+function rTableau(){
+  const g=document.getElementById('tb-grid');
+  if(!g)return;
+  const dg=equip.reduce((s,e)=>s+e.cal,0);
+  let equipGrid='<div style="font-size:10px;font-weight:700;color:var(--muted);margin-bottom:6px;text-align:center">⚡ DISJONCTEUR GÉNÉRAL '+dg+'A</div>';
+  if(equip.length){
+    equipGrid+=equip.map((e,i)=>'<div class="tbc '+e.etat+'" onclick="openEqDet(\''+e.id+'\')"><div class="ts"></div><div>'+(tI[e.type]||'🔌')+'</div><div style="font-size:10px;font-weight:700">'+e.cal+'A</div><div style="font-size:8px;color:var(--muted);word-break:break-word">'+e.nom+'</div><div style="font-size:7px;color:var(--muted);margin-top:2px;background:rgba(0,85,255,.08);padding:2px 4px;border-radius:3px">'+e.phase+'</div></div>').join('')+'<div class="tbc" style="border:1.5px dashed var(--border);font-size:20px;color:var(--muted)" onclick="openMo(\'eq-mo\')">＋</div>';
+  }
+  g.innerHTML=equipGrid;
+  el('dg-lbl',dg+' A');
+  const th=buildTableauHierarchy(equip);
+  let eqListHtml='';
+  if(equip.length){
+    eqListHtml+='<div style="margin-top:12px"><div style="font-size:11px;font-weight:700;color:#d46a2a;margin-bottom:10px">⚡ ARBORESCENCE DU TABLEAU</div>';
+    eqListHtml+='<div style="background:rgba(212,166,42,.08);border:1px solid rgba(212,166,42,.2);border-radius:10px;padding:14px;margin-bottom:12px"><div style="font-size:12px;font-weight:700;color:#08102b">Niveau 0 — AGCP</div><div style="font-size:10px;color:var(--muted);margin-top:6px">'+th.agcp.nom+'</div><div style="font-size:10px;color:var(--muted);margin-top:4px">Phase: '+th.agcp.phase+' • Puissance: '+th.agcp.pu+' kVA • Calibre: '+th.agcp.calibre+' A</div></div>';
+    eqListHtml+='<div style="font-size:10px;font-weight:600;color:var(--dark);margin:10px 0 8px">Niveau 1 — Groupes de Protection</div>';
+    eqListHtml+='<div style="display:grid;gap:14px">';
+    eqListHtml+=th.rangees.map((r)=>{
+      const circuitsHtml=r.circuits.map(c=>{
+        const terms=c.terminaux.map(t=>'<div style="font-size:9px;color:var(--muted);margin-top:4px">• '+t.id.replace(/_.*$/,'')+': '+(t.localisation||'sans renseignement')+'</div>').join('');
+        return '<div style="background:#fff;border:1px solid var(--border);border-radius:12px;padding:12px"><div style="display:flex;justify-content:space-between;align-items:flex-start"><div><div style="font-size:11px;font-weight:700;color:#08102b">'+c.displayId+' — '+c.nom+'</div><div style="font-size:9px;color:var(--muted);margin-top:4px">'+c.calibre+'A • '+c.phase+' • '+c.section+'</div>'+terms+'</div><div style="font-size:20px;line-height:1">'+(c.terminaux[0]?.type==='point'?'🔌':'💡')+'</div></div></div>';
+      });
+      return '<div style="background:#f8fbff;border:1px solid var(--border);border-radius:16px;padding:14px"><div style="display:flex;justify-content:space-between;gap:12px;align-items:center"><div><div style="font-size:12px;font-weight:700;color:#08102b">'+r.num+' — '+r.type+'</div><div style="font-size:10px;color:var(--muted);margin-top:4px">DDR '+r.ddr.nom+' • '+r.calibre+'A • '+r.sensibilite+'</div></div><div style="font-size:12px;font-weight:700;color:'+ (r.type==='Type A'?'#d46a2a':'#0055ff')+'">'+r.circuits.length+' DJ</div></div><div style="margin-top:12px;display:grid;gap:10px">'+circuitsHtml.join('')+'</div></div>';
+    }).join('');
+    eqListHtml+='</div>';
+  }else{
+    eqListHtml='<div class="empty">Aucun équipement</div>';
+  }
+  el('eq-list',eqListHtml);
+}
+function editEq(id){const e=equip.find(x=>x.id===id);if(!e)return;editId=id;document.getElementById('eq-mo-t').textContent='Modifier';document.getElementById('eq-n').value=e.nom;document.getElementById('eq-t').value=e.type;document.getElementById('eq-cal').value=e.cal;document.getElementById('eq-ph').value=e.phase;document.getElementById('eq-et').value=e.etat;document.getElementById('eq-no').value=e.notes||'';openMo('eq-mo');}
+function openEqDet(id){const e=equip.find(x=>x.id===id);if(!e)return;el('eq-det-c',`<div style="text-align:center;padding:8px 0 14px"><div style="font-size:44px">${tI[e.type]||'🔌'}</div><h3 style="font-size:16px;margin:8px 0">${e.nom}</h3><span class="bdg ${e.etat==='on'?'bgn':e.etat==='warn'?'byw':'brd'}">${e.etat==='on'?'Actif':e.etat==='warn'?'Alerte':'Off'}</span></div><div class="rbox"><div class="rr"><span>Type</span><b>${tL[e.type]}</b></div><div class="rr"><span>Calibre</span><b>${e.cal} A</b></div><div class="rr"><span>Phase</span><b>${e.phase}</b></div>${e.notes?`<div class="rr"><span>Notes</span><b>${e.notes}</b></div>`:''}</div><div style="display:flex;gap:5px;margin-top:10px"><button class="btn bg2 bsm" style="flex:1" onclick="updEtat('${e.id}','on')">✅</button><button class="btn bg2 bsm" style="flex:1" onclick="updEtat('${e.id}','warn')">⚠️</button><button class="btn bg2 bsm" style="flex:1" onclick="updEtat('${e.id}','off')">🔴</button></div><button class="btn bg2" onclick="editEq('${e.id}');closeMo('eq-det')" style="margin-top:8px">✏️ Modifier</button><button class="btn br2" onclick="equip=equip.filter(x=>x.id!=='${e.id}');S('equip',equip);rTableau();rHome();closeMo('eq-det')" style="margin-top:6px">🗑️ Supprimer</button><button class="btn bg2" onclick="closeMo('eq-det')" style="margin-top:6px">Fermer</button>`);openMo('eq-det');}
+function updEtat(id,etat){const e=equip.find(x=>x.id===id);if(e)e.etat=etat;S('equip',equip);rTableau();closeMo('eq-det');}
+
+// ════ SCHEMA ════
+function rRect(ctx,x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.lineTo(x+w-r,y);ctx.quadraticCurveTo(x+w,y,x+w,y+r);ctx.lineTo(x+w,y+h-r);ctx.quadraticCurveTo(x+w,y+h,x+w-r,y+h);ctx.lineTo(x+r,y+h);ctx.quadraticCurveTo(x,y+h,x,y+h-r);ctx.lineTo(x,y+r);ctx.quadraticCurveTo(x,y,x+r,y);ctx.closePath();}
+function openEqModal(type){
+  editId=null;
+  document.getElementById('eq-mo-t').textContent='Ajouter équipement';
+  document.getElementById('eq-n').value='';
+  document.getElementById('eq-t').value=type||'disj';
+  document.getElementById('eq-cal').value=type==='ddr'?40:(type==='disj'||type==='dpn'?16:10);
+  document.getElementById('eq-ph').value='L1';
+  document.getElementById('eq-et').value='on';
+  document.getElementById('eq-no').value='';
+  document.getElementById('eq-mo').style.display='flex';
+}
+function schemaCanvasClick(event){
+  const cv=document.getElementById('schema-canvas');
+  if(!cv||!schemaElements.length)return;
+  const rect=cv.getBoundingClientRect();
+  const x=event.clientX-rect.left;
+  const y=event.clientY-rect.top;
+  const hit=schemaElements.find(el=>x>=el.x&&x<=el.x+el.w&&y>=el.y&&y<=el.y+el.h);
+  if(!hit) return;
+  if(hit.id){
+    editEq(hit.id);
+  } else if(hit.type==='agcp'){
+    alert('AGCP : Disjoncteur Général. Utilisez le tableau pour modifier les équipements.');
+  }
+}
+function genSchema(){
+  const cv=document.getElementById('schema-canvas'); if(!cv) return;
+  const ctx=cv.getContext('2d');
+  const rangees=structureRangees(equip);
+  const maxCircuits=Math.max(1, ...rangees.map(r=>r.circuits.length), 1);
+  const W=Math.max(720, 260 + maxCircuits * 140);
+  const rowHeight=120;
+  const headerHeight=110;
+  cv.width=W;
+  cv.height=headerHeight + Math.max(1, rangees.length) * rowHeight + 40;
+  ctx.clearRect(0,0,cv.width,cv.height);
+  ctx.fillStyle='#f5f8ff'; ctx.fillRect(0,0,cv.width,cv.height);
+  ctx.fillStyle='#08102b'; ctx.font='bold 14px Inter,sans-serif'; ctx.textAlign='center';
+  ctx.fillText('SCHÉMA UNIFILAIRE', cv.width/2, 24);
+  ctx.font='10px Inter,sans-serif'; ctx.fillStyle='#5a6a9a';
+  ctx.fillText('Cliquez sur un composant pour le modifier. Ajoutez et générez à nouveau.', cv.width/2, 40);
+  const dgW=160, dgH=44;
+  const dgX=cv.width/2 - dgW/2;
+  const dgY=52;
+  ctx.strokeStyle='#0055ff'; ctx.lineWidth=2; ctx.fillStyle='#e6ecff';
+  rRect(ctx, dgX, dgY, dgW, dgH, 12); ctx.fill(); ctx.stroke();
+  ctx.fillStyle='#0055ff'; ctx.font='bold 12px Inter,sans-serif';
+  ctx.fillText('⚡ DISJONCTEUR GÉNÉRAL', cv.width/2, dgY + 20);
+  ctx.font='11px Inter,sans-serif'; ctx.fillStyle='#08102b';
+  ctx.fillText(equip.reduce((s,e)=>s+e.cal,0) + ' A', cv.width/2, dgY + 36);
+  schemaElements=[];
+  schemaElements.push({type:'agcp',label:'AGCP',x:dgX,y:dgY,w:dgW,h:dgH});
+  if(!rangees.length){
+    ctx.fillStyle='#08102b'; ctx.font='11px Inter,sans-serif'; ctx.fillText('Ajoutez des disjoncteurs pour construire le schéma unifilaire.', cv.width/2, dgY + dgH + 50);
+    cv.onclick=schemaCanvasClick;
+    return;
+  }
+  rangees.forEach((r,ri)=>{
+    const ddrX=60;
+    const ddrY=dgY + dgH + 40 + ri * rowHeight;
+    const ddrW=160, ddrH=44;
+    const ddrCenterX=ddrX + ddrW / 2;
+    ctx.strokeStyle='#8fa8ff'; ctx.lineWidth=2;
+    ctx.beginPath(); ctx.moveTo(cv.width/2, dgY + dgH); ctx.lineTo(ddrCenterX, ddrY); ctx.stroke();
+    ctx.fillStyle=r.type==='Type A' ? '#ffe9e8' : '#e6ecff';
+    ctx.strokeStyle=r.type==='Type A' ? '#d46a2a' : '#0055ff';
+    ctx.lineWidth=2;
+    rRect(ctx, ddrX, ddrY, ddrW, ddrH, 12); ctx.fill(); ctx.stroke();
+    ctx.fillStyle=r.type==='Type A' ? '#d46a2a' : '#0055ff'; ctx.font='bold 11px Inter,sans-serif'; ctx.textAlign='center';
+    ctx.fillText(r.num + ' — ' + r.type, ddrCenterX, ddrY + 18);
+    ctx.font='10px Inter,sans-serif'; ctx.fillStyle='#08102b';
+    ctx.fillText('DDR ' + r.ddr.nom + ' • ' + r.calibre + 'A • ' + r.sensibilite, ddrCenterX, ddrY + 33);
+    schemaElements.push({type:'ddr',id:null,label:r.num,x:ddrX,y:ddrY,w:ddrW,h:ddrH});
+    r.circuits.forEach((c,ci)=>{
+      const boxW=140, boxH=46;
+      const cx=ddrX + ddrW + 70 + ci * (boxW + 20);
+      const cy=ddrY;
+      ctx.strokeStyle='#5a6a9a'; ctx.lineWidth=1.5;
+      ctx.beginPath(); ctx.moveTo(ddrX + ddrW, ddrY + ddrH/2); ctx.lineTo(cx, cy + 20); ctx.stroke();
+      ctx.fillStyle='#ffffff'; ctx.strokeStyle='#08102b'; ctx.lineWidth=1.5;
+      rRect(ctx, cx, cy - 6, boxW, boxH, 10); ctx.fill(); ctx.stroke();
+      ctx.fillStyle='#08102b'; ctx.font='bold 10px Inter,sans-serif'; ctx.textAlign='left';
+      ctx.fillText(c.displayId + ' — ' + c.nom, cx + 10, cy + 12);
+      ctx.font='9px Inter,sans-serif'; ctx.fillStyle='#5a6a9a';
+      ctx.fillText(c.calibre + 'A • ' + c.phase + ' • ' + c.section, cx + 10, cy + 28);
+      ctx.fillStyle='#08102b'; ctx.beginPath(); ctx.arc(cx + boxW + 12, cy + 20, 6, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle='#ffffff'; ctx.font='bold 8px Inter,sans-serif'; ctx.textAlign='center'; ctx.fillText('T', cx + boxW + 12, cy + 23);
+      schemaElements.push({type:'circuit',id:c.id,label:c.displayId,x:cx,y:cy-6,w:boxW,h:boxH});
+    });
+  });
+  const legY=cv.height - 22;
+  ctx.fillStyle='#5a6a9a'; ctx.font='10px Inter,sans-serif'; ctx.textAlign='left';
+  ctx.fillText('Type A  ', 18, legY);
+  ctx.fillStyle='#d46a2a'; ctx.fillRect(70, legY - 7, 16, 7);
+  ctx.fillStyle='#5a6a9a'; ctx.fillText('Type AC  ', 108, legY);
+  ctx.fillStyle='#0055ff'; ctx.fillRect(170, legY - 7, 16, 7);
+  cv.onclick=schemaCanvasClick;
+}
+function exportSchema(){genSchema();const a=document.createElement('a');a.download='schema-unifilaire.png';a.href=document.getElementById('schema-canvas').toDataURL('image/png');a.click();}
+function exportSchemaPDF(){
+  genSchema();
+  const canvas=document.getElementById('schema-canvas');
+  const {jsPDF}=window;
+  const pdf=new jsPDF('portrait','mm','a4');
+  const imgData=canvas.toDataURL('image/png');
+  const imgWidth=190;
+  const imgHeight=(canvas.height*imgWidth)/canvas.width;
+  pdf.addImage(imgData,'PNG',10,10,imgWidth,imgHeight);
+  pdf.save('schema-unifilaire.pdf');
+}
+
+// ════ IA TABLEAU ════
+let iaS=null;
+async function startIACam(){try{const s=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}});iaS=s;document.getElementById('ia-vid').srcObject=s;el2('ia-cw','block');el2('ia-btns','none');}catch(e){el('ia-res','<div class="wb">⚠️ Caméra non accessible. Utilisez "Choisir photo".</div>');}}
+function capIA(){const v=document.getElementById('ia-vid'),c=document.getElementById('ia-cvs');c.width=v.videoWidth;c.height=v.videoHeight;c.getContext('2d').drawImage(v,0,0);captIA=c.toDataURL('image/jpeg',.85);setPrev('ia-prev',captIA);if(iaS)iaS.getTracks().forEach(t=>t.stop());el2('ia-cw','none');el2('ia-btns','block');el2('ia-launch','block');el('ia-res','');}
+async function launchIA(){if(!captIA)return;el2('ia-launch','none');el('ia-res','<div class="ai-load"><div class="ai-sp"></div><p>Vérification normes NFC 15-100...</p><div class="ai-p">CONFORMITÉ TABLEAU</div></div>');try{const th=buildTableauHierarchy(equip);const rangees=th.rangees;const triphasé=equip.some(e=>['L1','L2','L3','Triphasé'].includes(e.phase));const typeA=equip.filter(e=>e.nom.toLowerCase().match(/plaque|lave|ev|recharge/)).length>0;const maxCircuits=Math.max(...rangees.map(r=>r.circuits.length),0);const phaseLoads=triphasé?{L1:equip.filter(e=>e.phase==='L1').reduce((s,e)=>s+e.cal,0),L2:equip.filter(e=>e.phase==='L2').reduce((s,e)=>s+e.cal,0),L3:equip.filter(e=>e.phase==='L3').reduce((s,e)=>s+e.cal,0)}:{};const phaseAvg=triphasé?(phaseLoads.L1+phaseLoads.L2+phaseLoads.L3)/3:0;const maxPhase=triphasé?Math.max(phaseLoads.L1,phaseLoads.L2,phaseLoads.L3):0;const deseq=triphasé&&phaseAvg?((maxPhase-phaseAvg)/phaseAvg*100).toFixed(1):0;let defauts=[],score=100;if(maxCircuits>8){defauts.push({niveau:'critique',titre:'Trop de circuits par DDR',description:''+maxCircuits+' circuits sur une DDR. Max 8 circuits par DDR (NFC 15-100). Ajouter rangée.'});score-=30;}if(!typeA&&equip.some(e=>e.nom.toLowerCase().match(/plaque|lave|ev/))){defauts.push({niveau:'critique',titre:'Type AC au lieu de Type A',description:'Plaque/Lave-linge détectés. Type A obligatoire. Risque fuite courant continu.'});score-=25;}if(rangees.filter(r=>r.type==='Type AC').length===0&&equip.some(e=>e.nom.toLowerCase().match(/eclai|prise|volet/))){defauts.push({niveau:'attention',titre:'Pas de rangée Type AC',description:'Éclairage/prises sans DDR Type AC dédiée.'});score-=15;}if(triphasé&&deseq>10){defauts.push({niveau:'attention',titre:'Déséquilibre phases '+deseq+'%',description:'Répartition inégale. Répartir circuits: L1='+Math.round(phaseLoads.L1)+'A, L2='+Math.round(phaseLoads.L2)+'A, L3='+Math.round(phaseLoads.L3)+'A.'});score-=15;}if(equip.some(e=>e.cal>=25&&e.phase==='Mono')){const gros=equip.find(e=>e.cal>=25&&e.phase==='Mono');defauts.push({niveau:'attention',titre:'Gros calibre monophasé '+gros.cal+'A',description:'Disjoncteur > 20A sur phase unique. Préférer triphasé pour charge > 4.6kW.'});score-=10;}const col=score>=80?'var(--green)':score>=60?'var(--yellow)':'var(--red)';el('ia-res',`<div style="display:flex;align-items:center;gap:12px;padding:12px;background:#f0f4ff;border:1px solid var(--border);border-radius:12px;margin:10px 0"><div style="font-family:Orbitron,monospace;font-size:28px;font-weight:700;color:${col}">${score}</div><div><div style="font-size:12px;font-weight:600">/100 — Conformité NFC 15-100</div><div style="font-size:11px;color:var(--muted)">Rangées: ${rangees.length} | Circuits: ${equip.filter(e=>['disj','dpn'].includes(e.type)).length} | ${triphasé?'Triphasé '+deseq+'% déséq.':'Monophasé'}</div></div></div>${defauts.map(x=>`<div class="def-it ${x.niveau==='critique'?'crit':x.niveau==='attention'?'warn':'ok'}"><div style="font-size:15px;flex-shrink:0">${x.niveau==='critique'?'🔴':x.niveau==='attention'?'⚠️':'✅'}</div><div><div style="font-size:12px;font-weight:600">${x.titre}</div><div style="font-size:11px;color:var(--muted);line-height:1.4">${x.description}</div></div></div>`).join('')}<button class="btn bg2" onclick="el2('ia-launch','block');el('ia-res','')" style="margin-top:8px">🔄 Nouvelle analyse</button>`);}catch(e){el2('ia-launch','block');el('ia-res','<div class="wb">Erreur analyse. Vérifiez équipements.</div>');}}
+
+// ════ ÉTIQUETTES ════
+const phC={L1:'#0055ff',L2:'#00c853',L3:'#ff6200',Mono:'#7c3aed',Triphasé:'#d500f9'};
+let etqS=null;
+function addEtiq(){const n=v2('etq-n');if(!n)return;etiq.push({id:'et'+Date.now(),nom:n,cal:+v2('etq-c')||16,phase:v2('etq-ph')||'L1',icon:v2('etq-ico')||'⚡',sel:true});S('etiq',etiq);document.getElementById('etq-n').value='';rEtqList();}
+function rEtqList(){const act=document.getElementById('etq-act');el('etq-list',etiq.length?etiq.map((e,i)=>`<div style="display:flex;align-items:center;gap:8px;padding:10px;background:#f0f4ff;border:1.5px solid ${e.sel?'var(--blue)':'var(--border)'};border-radius:10px;margin-bottom:5px;cursor:pointer" onclick="tgEtq(${i})"><input type="checkbox" ${e.sel?'checked':''} onclick="event.stopPropagation();tgEtq(${i})" style="width:15px;height:15px;accent-color:var(--blue)"><div style="font-size:17px">${e.icon}</div><div style="flex:1"><div style="font-size:13px;font-weight:600">${e.nom}</div><div style="font-size:10px;color:var(--muted)">${e.cal}A • <span style="color:${phC[e.phase]||'#0055ff'};font-weight:600">${e.phase}</span>${e.nom.toLowerCase().match(/plaque|lave|ev|recharge/)?'<span style="background:rgba(212,106,42,.2);color:#d46a2a;margin-left:6px;padding:2px 6px;border-radius:3px;font-size:9px;font-weight:700;">TYPE A</span>':' • Type AC'}</div></div><button onclick="event.stopPropagation();etiq.splice(${i},1);S('etiq',etiq);rEtqList()" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:15px">✕</button></div>`).join(''):'<p style="color:var(--muted);font-size:12px;text-align:center;padding:12px">Ajoutez des circuits ci-dessus</p>');if(act){act.style.display=etiq.length?'block':'none';}const sel=etiq.filter(e=>e.sel).length;el('etq-sc',sel+' sél.');if(document.getElementById('etq-sa'))document.getElementById('etq-sa').checked=sel===etiq.length&&etiq.length>0;rEtqGrid();}
+function tgEtq(i){etiq[i].sel=!etiq[i].sel;S('etiq',etiq);rEtqList();}
+function etqSelAll(cb){etiq.forEach(e=>e.sel=cb.checked);S('etiq',etiq);rEtqList();}
+function rEtqGrid(){el('etq-cnt',etiq.length);el('etq-grid',etiq.map((e,i)=>`<div class="etqc ${e.sel?'sel':''}"><div style="position:absolute;top:3px;right:3px;cursor:pointer;color:#bbb;font-size:11px" onclick="etiq.splice(${i},1);S('etiq',etiq);rEtqList()">×</div><div style="font-size:18px;margin-bottom:3px">${e.icon}</div><div style="font-size:9px;font-weight:700;color:#08102b;line-height:1.2;margin-bottom:2px">${e.nom}</div><div style="font-family:Orbitron,monospace;font-size:11px;font-weight:700;color:#0055ff">${e.cal}A</div><div style="background:${phC[e.phase]||'#0055ff'};color:#fff;border-radius:4px;padding:2px 5px;font-size:8px;font-weight:700;margin-top:2px;display:inline-block">${e.phase}</div></div>`).join(''));}
+function printEtqSel(){const sel=etiq.filter(e=>e.sel);if(!sel.length){alert('Sélectionnez des étiquettes');return;}doPrint(sel);}
+function printEtq(){if(!etiq.length){alert('Aucune étiquette');return;}doPrint(etiq);}
+function doPrint(list){const w=window.open('','_blank');w.document.write(`<html><head><title>Étiquettes</title><style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:Arial,sans-serif;padding:12mm}h2{color:#0055ff;font-size:12px;margin-bottom:8px;border-bottom:1px solid #d0dcff;padding-bottom:5px}.grid{display:grid;grid-template-columns:repeat(5,35mm);gap:4mm}.etq{border:1.5px solid #0055ff;border-radius:5px;padding:5px;text-align:center;height:40mm;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}.ico{font-size:17px}.nom{font-size:7px;font-weight:700;color:#08102b;line-height:1.2}.cal{font-size:13px;font-weight:900;color:#0055ff}.ph{color:#fff;border-radius:3px;padding:2px 5px;font-size:8px;font-weight:700;margin-top:2px;display:inline-block}@media print{@page{size:A4;margin:8mm}}</style></head><body><h2>⚡ WB ElectroTech — Étiquettes (${list.length} circuits) — ${new Date().toLocaleDateString('fr-FR')}</h2><div class="grid">${list.map(e=>`<div class="etq"><div class="ico">${e.icon}</div><div class="nom">${e.nom}</div><div class="cal">${e.cal}A</div><div class="ph" style="background:${phC[e.phase]||'#0055ff'}">${e.phase}</div></div>`).join('')}</div><script>window.onload=()=>window.print()<\/script></body></html>`);}
+function clearEtq(){if(!etiq.length)return;if(confirm('Effacer ?')){etiq=[];S('etiq',etiq);rEtqList();}}
+async function startEtqCam(){try{const s=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}});etqS=s;document.getElementById('etq-vid').srcObject=s;el2('etq-cw','block');el2('etq-btns','none');}catch(e){el('etq-ia-res','<div class="wb">⚠️ Caméra non accessible.</div>');}}
+function capEtq(){const v=document.getElementById('etq-vid'),c=document.getElementById('etq-cvs');c.width=v.videoWidth;c.height=v.videoHeight;c.getContext('2d').drawImage(v,0,0);captEtq=c.toDataURL('image/jpeg',.85);setPrev('etq-prev',captEtq);if(etqS)etqS.getTracks().forEach(t=>t.stop());el2('etq-cw','none');el2('etq-btns','block');el2('etq-launch','block');el('etq-ia-res','');}
+function handleEtqUp(e){const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=ev=>{captEtq=ev.target.result;setPrev('etq-prev',captEtq);el2('etq-launch','block');el('etq-ia-res','');};r.readAsDataURL(f);}
+async function launchEtqIA(){if(!captEtq)return;el2('etq-launch','none');el('etq-ia-res','<div class="ai-load"><div class="ai-sp"></div><p>Identification circuits...</p></div>');try{const r=await callAI([{type:'image',source:{type:'base64',media_type:captEtq.split(';')[0].split(':')[1],data:captEtq.split(',')[1]}},{type:'text',text:'Identifie tous les circuits.'}],'Expert électricien. UNIQUEMENT en JSON: {"circuits":[{"nom":"Lumière","cal":16,"phase":"L1","icon":"💡"}],"alertes":[{"niveau":"critique|attention","message":"Msg"}]}. Icons: 💡lumière 🔌prise ❄️clim 🍳cuisine 🚿bain ⚙️moteur 🖥️info 🔥chauffage 🛡️DDR ⚡général');iaEtqList=(r.circuits||[]).map((c,i)=>({...c,id:'ia'+Date.now()+i,sel:true}));let ah='';if(r.alertes?.length)ah=(r.alertes||[]).map(a=>`<div class="def-it ${a.niveau==='critique'?'crit':'warn'}" style="margin-bottom:6px"><div>${a.niveau==='critique'?'🚨':'⚠️'}</div><div style="font-size:11px;font-weight:600">${a.message}</div></div>`).join('');el('etq-ia-res',ah+`<div style="background:rgba(0,200,83,.07);border:1px solid rgba(0,200,83,.2);border-radius:10px;padding:10px;margin-bottom:8px"><div style="font-weight:700;color:var(--green);font-size:12px">✅ ${iaEtqList.length} circuit(s)</div></div>`);rEtqIaList();}catch(e){el('etq-ia-res','<div class="wb">Erreur. Vérifiez connexion.</div>');el2('etq-launch','block');}}
+function rEtqIaList(){const act=document.getElementById('etq-ia-act');el('etq-ia-list',iaEtqList.map((e,i)=>`<div style="display:flex;align-items:center;gap:8px;padding:8px 10px;background:#f0f4ff;border:1.5px solid ${e.sel?'var(--blue)':'var(--border)'};border-radius:10px;margin-bottom:5px;cursor:pointer" onclick="tgIaEtq(${i})"><input type="checkbox" ${e.sel?'checked':''} onclick="event.stopPropagation();tgIaEtq(${i})" style="width:15px;height:15px;accent-color:var(--blue)"><div style="font-size:17px">${e.icon}</div><div style="flex:1"><div style="font-size:13px;font-weight:600">${e.nom}</div><div style="font-size:10px;color:var(--muted)">${e.cal}A • <span style="color:${phC[e.phase]||'#0055ff'};font-weight:600">${e.phase}</span></div></div></div>`).join(''));if(act)act.style.display=iaEtqList.length?'block':'none';const sel=iaEtqList.filter(e=>e.sel).length;el('etq-ia-sc',sel+' sél.');}
+function tgIaEtq(i){iaEtqList[i].sel=!iaEtqList[i].sel;rEtqIaList();}
+function etqIaSelAll(cb){iaEtqList.forEach(e=>e.sel=cb.checked);rEtqIaList();}
+function printEtqIaSel(){const sel=iaEtqList.filter(e=>e.sel);if(!sel.length){alert('Sélectionnez');return;}sel.forEach(e=>{if(!etiq.find(x=>x.nom===e.nom))etiq.push({...e,sel:true});});S('etiq',etiq);doPrint(sel);rEtqList();}
+function printEtqIaAll(){iaEtqList.forEach(e=>{if(!etiq.find(x=>x.nom===e.nom))etiq.push({...e,sel:true});});S('etiq',etiq);doPrint(iaEtqList);rEtqList();}
+
+// ════ ÉQUILIBRAGE ════
+let eqS=null;
+function rCircuits(){const tri=document.getElementById('bal-t').value==='tri';el('circuits-list',circuits.map((c,i)=>`<div style="display:flex;align-items:center;gap:7px;padding:8px 10px;background:#f0f4ff;border:1px solid var(--border);border-radius:9px;margin-bottom:5px"><span style="flex:1;font-size:12px;font-weight:500">${c.n} — ${c.p}W</span>${tri?`<select onchange="circuits[${i}].ph=this.value;S('circuits',circuits)" style="width:64px"><option ${c.ph==='L1'?'selected':''}>L1</option><option ${c.ph==='L2'?'selected':''}>L2</option><option ${c.ph==='L3'?'selected':''}>L3</option></select>`:'<span class="bdg bbl" style="font-size:10px">Phase</span>'}<button onclick="circuits.splice(${i},1);S('circuits',circuits);rCircuits()" style="background:rgba(255,23,68,.08);border:1px solid rgba(255,23,68,.18);color:var(--red);border-radius:7px;padding:4px 8px;cursor:pointer;font-size:11px">✕</button></div>`).join(''));}
+function addCircuit(){circuits.push({n:v2('cir-n')||'Circuit',p:+v2('cir-p')||0,ph:'L1'});S('circuits',circuits);rCircuits();}
+function calcEquil(){const tri=document.getElementById('bal-t').value==='tri';if(!circuits.length){el('res-equil','<p style="color:var(--muted);font-size:12px">Aucun circuit</p>');return;}if(!tri){el('res-equil',`<div class="rr"><span>Puissance totale</span><b>${circuits.reduce((s,c)=>s+c.p,0)} W</b></div><div class="wb">Monophasé : vérifiez la capacité de la phase.</div>`);return;}const ph={L1:0,L2:0,L3:0};circuits.forEach(c=>ph[c.ph]+=c.p);const tot=ph.L1+ph.L2+ph.L3,moy=tot/3,deseq=moy>0?+((Math.max(ph.L1,ph.L2,ph.L3)-Math.min(ph.L1,ph.L2,ph.L3))/moy*100).toFixed(1):0;const col=deseq>20?'var(--red)':deseq>10?'var(--yellow)':'var(--green)';const critique=deseq>20,attention=deseq>10;el('res-equil',`<div class="rbox">${['L1','L2','L3'].map(k=>`<div class="phr"><div class="pht"><span style="font-weight:600">${k}</span><span>${ph[k]}W (${(tot>0?ph[k]/tot*100:0).toFixed(1)}%)</span></div><div class="phb"><div class="phf" style="width:${tot>0?(ph[k]/tot*100).toFixed(1):0}%;background:${col}"></div></div></div>`).join('')}<div class="rr" style="margin-top:6px"><span>Déséquilibre</span><b style="color:${col}">${deseq}%</b></div><div class="rr"><span>Recommandation</span><b>${critique?'🔴 Rééquilibrer immédiatement':attention?'🟡 À corriger':'✅ Conforme NFC 15-100'}</b></div></div><div style="background:#f0f4ff;border:1px solid var(--border);border-radius:10px;padding:10px;margin-top:10px;font-size:11px;line-height:1.6"><div style="font-weight:700;color:var(--dark);margin-bottom:6px">💡 Conseil équilibrage</div><div>${deseq>20?'Déséquilibre critique (>20%). Répartir immédiatement les charges. Chaque phase doit supporter au max '+Math.round(moy)+' W.':deseq>10?'Déséquilibre modéré. Essayer de déplacer des circuits. Écarts actuels: L1='+(ph.L1-moy).toFixed(0)+'W, L2='+(ph.L2-moy).toFixed(0)+'W, L3='+(ph.L3-moy).toFixed(0)+'W':'Équilibrage correct. Charges bien réparties sur les 3 phases.'}</div></div>`);}
+async function startEqCam(){try{const s=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}});eqS=s;document.getElementById('eq-vid').srcObject=s;el2('eq-cw','block');el2('eq-btns','none');}catch(e){el('eq-ia-res','<div class="wb">⚠️ Caméra non accessible.</div>');}}
+function capEqPhoto(){const v=document.getElementById('eq-vid'),c=document.getElementById('eq-cvs');c.width=v.videoWidth;c.height=v.videoHeight;c.getContext('2d').drawImage(v,0,0);captEq=c.toDataURL('image/jpeg',.85);setPrev('eq-prev',captEq);if(eqS)eqS.getTracks().forEach(t=>t.stop());el2('eq-cw','none');el2('eq-btns','block');el2('eq-launch','block');el('eq-ia-res','');}
+function handleEqUp(e){const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=ev=>{captEq=ev.target.result;setPrev('eq-prev',captEq);el2('eq-launch','block');el('eq-ia-res','');};r.readAsDataURL(f);}
+async function launchEqIA(){if(!captEq)return;el2('eq-launch','none');el('eq-ia-res','<div class="ai-load"><div class="ai-sp"></div><p>Analyse équilibrage...</p><div class="ai-p">ANALYSE PHASES</div></div>');try{const r=await callAI([{type:'image',source:{type:'base64',media_type:captEq.split(';')[0].split(':')[1],data:captEq.split(',')[1]}},{type:'text',text:"Analyse l'équilibrage triphasé."}],'Expert électricien pédagogue. UNIQUEMENT en JSON: {"equilibre":true,"score":85,"L1_pct":35,"L2_pct":33,"L3_pct":32,"desequilibre_pct":5.2,"resume":"Résumé","conseils":["Conseil 1","Conseil 2","Conseil 3"],"niveau":"bon|moyen|critique"}. Conseils simples.');const col=r.niveau==='bon'?'var(--green)':r.niveau==='moyen'?'var(--yellow)':'var(--red)';el('eq-ia-res',`<div style="background:${r.equilibre?'rgba(0,200,83,.07)':'rgba(255,179,0,.07)'};border:1px solid ${r.equilibre?'rgba(0,200,83,.22)':'rgba(255,179,0,.22)'};border-radius:12px;padding:12px;margin:10px 0;display:flex;align-items:center;gap:10px"><span style="font-size:22px">${r.equilibre?'✅':'⚠️'}</span><div><div style="font-size:13px;font-weight:700;color:${col}">${r.equilibre?'Tableau équilibré':'Déséquilibre'} — ${r.desequilibre_pct}%</div><div style="font-size:11px;color:var(--muted)">${r.resume}</div></div></div><div class="rbox" style="margin-bottom:10px">${['L1','L2','L3'].map(p=>`<div class="phr"><div class="pht"><b>${p}</b><span>${r[p+'_pct']||0}%</span></div><div class="phb"><div class="phf" style="width:${r[p+'_pct']||0}%;background:${col}"></div></div></div>`).join('')}<div class="rr"><span>Score</span><b style="color:${col}">${r.score}/100</b></div></div><div style="background:#f0f4ff;border:1px solid var(--border);border-radius:11px;padding:12px"><div style="font-size:12px;font-weight:700;margin-bottom:8px">💡 Conseils</div>${(r.conseils||[]).map((c,i)=>`<div style="display:flex;gap:8px;padding:6px 0;border-bottom:1px solid var(--border);font-size:12px;line-height:1.5"><span style="background:var(--blue);color:#fff;border-radius:50%;width:18px;height:18px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0">${i+1}</span>${c}</div>`).join('')}</div><button class="btn bg2" onclick="el2('eq-launch','block');el('eq-ia-res','')" style="margin-top:8px">🔄 Nouvelle analyse</button>`);}catch(e){el('eq-ia-res','<div class="wb">Erreur. Vérifiez connexion.</div>');el2('eq-launch','block');}}
+
+// ════ DIAGNOSTIC ════
+const DT={start:{q:'Quel est le symptôme principal ?',opts:[{l:'🔴 Disjoncteur qui déclenche',n:'disj'},{l:'💡 Plus de courant / panne totale',n:'panne'},{l:'🔥 Échauffement anormal',n:'chauffe'},{l:'⚙️ Moteur ne démarre pas',n:'moteur'},{l:'💡 Éclairage défaillant',n:'eclairage'},{l:'⚡ Problème de tension',n:'tension'}]},
+disj:{q:'Quel type de disjoncteur déclenche ?',opts:[{l:'🛡️ Différentiel (DDR)',n:'ddr'},{l:'⚡ Disjoncteur de circuit',n:'disj_c'},{l:'🔲 Disjoncteur général',n:'sol_dg'}]},
+ddr:{q:'Dans quelle situation déclenche-t-il ?',opts:[{l:'Au toucher d\'un appareil',n:'sol_app'},{l:'Aléatoirement',n:'sol_cable'},{l:'Quand il pleut / humidité',n:'sol_hum'}]},
+disj_c:{q:'Le disjoncteur déclenche quand ?',opts:[{l:'Dès qu\'on le remet',n:'sol_cc'},{l:'Après quelques minutes',n:'sol_surcharge'},{l:'En branchant un appareil',n:'sol_surcharge2'}]},
+panne:{q:'La coupure concerne ?',opts:[{l:'Tout le bâtiment',n:'sol_panne_tot'},{l:'Un seul circuit',n:'sol_panne_circ'},{l:'Une seule prise / point',n:'sol_panne_pt'}]},
+moteur:{q:'Le moteur fait quel bruit ?',opts:[{l:'Aucun bruit, ne démarre pas',n:'sol_mot_el'},{l:'Bourdonne mais ne tourne pas',n:'sol_mot_mec'},{l:'Démarre puis s\'arrête',n:'sol_mot_th'}]},
+sol_dg:{sol:true,titre:'Surcharge générale',urgence:'haute',causes:['Puissance totale > calibre DG','Court-circuit sur un circuit principal','Défaut sur le câble d\'arrivée'],solutions:['Calculer le bilan de puissance (onglet Calculs)','Débrancher progressivement tous les circuits','Appeler un électricien pour le câble d\'arrivée']},
+sol_app:{sol:true,titre:'Défaut isolement sur un appareil',urgence:'critique',causes:['L\'appareil a un défaut d\'isolement (masse sous tension)','Corrosion interne de l\'appareil','Connexion défectueuse à l\'intérieur'],solutions:['Débrancher l\'appareil immédiatement','Tester chaque appareil individuellement','Faire vérifier ou remplacer l\'appareil','Vérifier la mise à la terre du circuit']},
+sol_cable:{sol:true,titre:'Fuite à la terre dans le câblage',urgence:'haute',causes:['Câble vieilli avec isolant abîmé','Humidité dans une boîte de dérivation','Neutre en contact avec la terre'],solutions:['Inspecter toutes les boîtes de dérivation','Mesurer l\'isolement avec mégohmmètre','Vérifier les zones humides','Remplacer les câbles vieillissants (>20 ans)']},
+sol_hum:{sol:true,titre:'Infiltration d\'humidité',urgence:'critique',causes:['Eau infiltrée dans le tableau','Condensation sur les conducteurs','Installation extérieure non étanche'],solutions:['Localiser et éliminer la source d\'humidité','Sécher les composants avant remise en service','Vérifier l\'indice IP du tableau','Utiliser des matériaux adaptés']},
+sol_cc:{sol:true,titre:'Court-circuit sur le circuit',urgence:'critique',causes:['Deux fils sous tension en contact','Câble endommagé (rongé, écrasé)','Faux contact dans une prise'],solutions:['Débrancher tous les appareils','Inspecter visuellement l\'installation','Mesurer la continuité des conducteurs','Remplacer le câble défectueux']},
+sol_surcharge:{sol:true,titre:'Surcharge du circuit',urgence:'normale',causes:['Trop d\'appareils sur le même circuit','Câble de section insuffisante','Connexion desserrée'],solutions:['Calculer la puissance totale (onglet Calculs)','Répartir les appareils sur plusieurs circuits','Vérifier les connexions dans les boîtes','Augmenter la section du câble si nécessaire']},
+sol_surcharge2:{sol:true,titre:'Appareil trop puissant pour le circuit',urgence:'normale',causes:['L\'appareil consomme plus que le calibre','Courant de démarrage trop élevé (moteur, clim)'],solutions:['Vérifier la puissance vs calibre du disjoncteur','Utiliser un disjoncteur courbe D pour les moteurs','Déplacer l\'appareil sur un circuit plus puissant']},
+sol_panne_tot:{sol:true,titre:'Panne générale — coupure totale',urgence:'haute',causes:['Coupure du réseau de distribution','Disjoncteur général déclenché','Fusible général fondu'],solutions:['Vérifier chez les voisins si la coupure est générale','Vérifier le disjoncteur général','Contacter le fournisseur d\'électricité','Mesurer la tension avec un voltmètre']},
+sol_panne_circ:{sol:true,titre:'Panne sur un circuit',urgence:'normale',causes:['Disjoncteur déclenché','Conducteur neutre coupé','Mauvaise connexion au tableau'],solutions:['Identifier le disjoncteur correspondant','Remettre le disjoncteur si déclenché','Si redéclenche, chercher la cause','Vérifier les connexions au tableau']},
+sol_panne_pt:{sol:true,titre:'Défaut local — prise ou point lumineux',urgence:'normale',causes:['Fusible de protection fondu','Connexion desserrée ou oxydée','Prise ou interrupteur défectueux'],solutions:['Dévisser et inspecter la prise','Resserrer ou remplacer les connexions','Remplacer l\'appareillage défectueux','Vérifier la continuité avec testeur']},
+chauffe:{sol:true,titre:'Échauffement anormal — DANGER',urgence:'critique',causes:['Connexion desserrée créant résistance de contact','Section câble insuffisante','Disjoncteur surdimensionné'],solutions:['COUPER immédiatement le circuit','Serrer toutes les connexions','Mesurer température avec thermomètre IR','Remplacer câbles sous-dimensionnés']},
+moteur_gen:{sol:true,titre:'Diagnostic moteur',urgence:'normale',causes:['Absence tension sur une phase','Contacteur défectueux','Surcharge thermique'],solutions:['Mesurer tension aux bornes moteur','Vérifier contacteur et relais','Inspecter disjoncteurs de protection','Vérifier réglage relais thermique']},
+sol_mot_el:{sol:true,titre:'Alimentation moteur absente',urgence:'normale',causes:['Absence tension sur une ou plusieurs phases','Contacteur défectueux','Câble de commande interrompu'],solutions:['Mesurer tension aux bornes moteur','Vérifier contacteur et relais','Tester continuité circuit commande','Vérifier fusibles et disjoncteurs moteur']},
+sol_mot_mec:{sol:true,titre:'Blocage mécanique du moteur',urgence:'haute',causes:['Roulement grippé','Charge mécanique trop importante','Rotor bloqué par un corps étranger'],solutions:['Débrancher et tourner l\'arbre manuellement','Vérifier et lubrifier les roulements','Inspecter la charge mécanique','Faire réviser le moteur']},
+sol_mot_th:{sol:true,titre:'Déclenchement thermique moteur',urgence:'normale',causes:['Surcharge thermique — courant trop élevé','Mauvaise ventilation','Relais thermique mal réglé'],solutions:['Laisser refroidir avant de redémarrer','Vérifier et ajuster le relais thermique (1.0 à 1.15 × In)','Mesurer le courant absorbé','Améliorer la ventilation']},
+eclairage:{sol:true,titre:'Problème d\'éclairage',urgence:'faible',causes:['Ampoule grillée','Starter ou ballast défectueux','Interrupteur défectueux','Câble desserré au luminaire'],solutions:['Remplacer l\'ampoule en premier','Pour néons : remplacer starter puis ballast','Tester l\'interrupteur avec testeur','Vérifier les connexions au luminaire']},
+tension:{sol:true,titre:'Problème de tension',urgence:'haute',causes:['Surtension réseau (>250V)','Neutre défectueux créant déséquilibre','Mauvaise mise à la terre'],solutions:['Mesurer tension avec voltmètre','Vérifier connexion du neutre au tableau','Installer parafoudre si surtensions fréquentes','Contacter le fournisseur réseau']}};
+let diagPath=[],diagNode='start';
+function renderDiag(){const e=document.getElementById('diag-content');if(!e)return;const nd=DT[diagNode];if(!nd){e.innerHTML='';return;}if(nd.sol){const uc={critique:'var(--red)',haute:'var(--orange)',normale:'var(--yellow)',faible:'var(--green)'};e.innerHTML=`<div class="dsol"><div style="display:flex;align-items:center;gap:8px;margin-bottom:12px"><div style="width:28px;height:28px;border-radius:50%;background:${uc[nd.urgence]||'var(--blue)'};display:flex;align-items:center;justify-content:center;font-size:13px;color:#fff">✓</div><div><div style="font-size:14px;font-weight:700">${nd.titre}</div><div style="font-size:11px;color:${uc[nd.urgence]};font-weight:600;margin-top:1px">${nd.urgence==='critique'?'🔴 URGENT':nd.urgence==='haute'?'🟠 Priorité haute':nd.urgence==='normale'?'🟡 À traiter':'🟢 Non urgent'}</div></div></div><div style="margin-bottom:10px"><div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px">Causes probables</div>${nd.causes.map(c=>`<div style="display:flex;gap:7px;font-size:12px;padding:5px 0;border-bottom:1px solid var(--border);line-height:1.4"><span style="color:var(--orange);flex-shrink:0">▸</span>${c}</div>`).join('')}</div><div><div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px">Solutions</div>${nd.solutions.map((s,i)=>`<div style="display:flex;gap:7px;font-size:12px;padding:5px 0;border-bottom:1px solid var(--border);line-height:1.4"><span class="dsn">${i+1}</span>${s}</div>`).join('')}</div></div><div style="display:flex;gap:7px;margin-top:10px"><button class="btn bp bsm" onclick="saveDH('${nd.titre}')">💾 Sauvegarder</button><button class="btn bg2 bsm" onclick="resetDiag()">🔄 Nouveau</button></div>`;return;}e.innerHTML=`<div style="font-size:13px;font-weight:600;color:var(--dark);margin-bottom:10px">${nd.q}</div>${diagPath.length?`<div style="margin-bottom:10px;display:flex;flex-wrap:wrap;gap:4px">${diagPath.map((p,i)=>`<span class="bdg bbl" style="cursor:pointer" onclick="goDiagBack(${i})">${p.substring(0,15)}</span>`).join('')}<span style="color:var(--muted);font-size:10px;align-self:center">← reculer</span></div>`:''}<div>${nd.opts.map(o=>`<div class="dopt" onclick="goDiag('${o.n}','${o.l.replace(/'/g,"\\'")}')">${o.l}</div>`).join('')}</div>`;}
+function goDiag(node,label){diagPath.push(label);diagNode=node;renderDiag();}
+function goDiagBack(i){diagPath=diagPath.slice(0,i);let cur='start';for(let j=0;j<i;j++){const opts=DT[cur]?.opts||[];const m=opts.find(o=>o.l===diagPath[j]);if(m){cur=m.n;}}diagNode=cur;renderDiag();}
+function resetDiag(){diagPath=[];diagNode='start';renderDiag();}
+function saveDH(t){diagH.unshift({titre:t,path:diagPath.join(' → '),date:new Date().toLocaleDateString('fr-FR')});S('diag',diagH);}
+function rDiagH(){el('diag-histo-list',diagH.length?diagH.map(d=>`<div class="card" style="padding:12px;margin-bottom:8px"><div style="font-weight:600;font-size:13px">${d.titre}</div><div style="font-size:11px;color:var(--muted)">${d.path}</div><div style="font-size:10px;color:var(--muted)">📅 ${d.date}</div></div>`).join(''):'<div class="empty">Aucun historique</div>');}
+async function launchDiagIA(){const desc=v2('diag-desc');if(!desc){alert('Décrivez le problème');return;}el('diag-ia-res','<div class="ai-load"><div class="ai-sp"></div><p>Analyse de la panne...</p><div class="ai-p">DIAGNOSTIC EN COURS</div></div>');try{const r=await callAIText(`Type: ${v2('diag-inst')}\nÉquipements: ${v2('diag-eq')||'non précisé'}\nProblème: ${desc}`,'Expert électrotechnicien 20 ans expérience. Analyse cette panne. UNIQUEMENT en JSON: {"diagnostic":"Titre","urgence":"critique|haute|normale|faible","causes":["c1","c2","c3"],"solutions":["s1","s2","s3","s4"],"outils":["o1","o2"],"normes":["IEC..."],"conseil":"Sécurité importante"}');const uc={critique:'var(--red)',haute:'var(--orange)',normale:'var(--yellow)',faible:'var(--green)'};el('diag-ia-res',`<div class="dsol"><div style="display:flex;align-items:center;gap:8px;margin-bottom:10px"><div style="width:30px;height:30px;border-radius:50%;background:${uc[r.urgence]};display:flex;align-items:center;justify-content:center;font-size:15px;color:#fff;flex-shrink:0">⚡</div><div><div style="font-size:14px;font-weight:700">${r.diagnostic}</div><div style="font-size:11px;font-weight:600;color:${uc[r.urgence]}">${r.urgence==='critique'?'🔴 DANGER':r.urgence==='haute'?'🟠 Priorité haute':'🟡 Traitement requis'}</div></div></div>${r.conseil?`<div class="wb" style="margin-bottom:10px">⚠️ <b>Sécurité :</b> ${r.conseil}</div>`:''}<div style="margin-bottom:10px"><div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px">Causes probables</div>${r.causes.map(c=>`<div style="display:flex;gap:7px;font-size:12px;padding:5px 0;border-bottom:1px solid var(--border);line-height:1.4"><span style="color:var(--orange);flex-shrink:0">▸</span>${c}</div>`).join('')}</div><div style="margin-bottom:10px"><div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px">Étapes de résolution</div>${r.solutions.map((s,i)=>`<div style="display:flex;gap:7px;font-size:12px;padding:5px 0;border-bottom:1px solid var(--border);line-height:1.4"><span class="dsn">${i+1}</span>${s}</div>`).join('')}</div>${r.outils?.length?`<div style="margin-bottom:8px"><div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px">Outils nécessaires</div><div style="display:flex;flex-wrap:wrap;gap:5px">${r.outils.map(o=>`<span class="bdg bbl">${o}</span>`).join('')}</div></div>`:''}${r.normes?.length?`<div><div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px">Normes applicables</div><div style="display:flex;flex-wrap:wrap;gap:5px">${r.normes.map(n=>`<span class="bdg" style="background:rgba(124,58,237,.08);color:var(--purple);border:1px solid rgba(124,58,237,.18)">${n}</span>`).join('')}</div></div>`:''}`);}catch(e){el('diag-ia-res','<div class="wb">Erreur. Vérifiez connexion.</div>');}}
+
+// ════ NORMES ════
+const ND=[
+  {r:'NFC 15-100',t:'Installations électriques BT — France',d:'Norme française pour installations résidentielles et tertiaires. Circuits, protections, mises à la terre, salles de bain.',tags:['Résidentiel','BT'],det:'Applicable à toutes les installations domestiques et tertiaires en France. Couvre les circuits, protections, mises à la terre, salles de bain, piscines, locaux à risques. Version 2023 en vigueur.'},
+  {r:'IEC 60364',t:'Installations électriques des bâtiments',d:'Norme internationale. Base de la NFC 15-100 et de toutes les normes européennes BT.',tags:['International','BT'],det:'7 parties : principes fondamentaux, protection chocs, effets thermiques, surtensions, perturbations, choix équipements, vérification.'},
+  {r:'IEC 60909',t:'Courants de court-circuit — IEC',d:'Méthode de calcul Icc. Essentielle pour dimensionner les protections.',tags:['Calcul','Court-circuit'],det:'Méthode du facteur c. Icc max pour sélectionner Icu. Icc min pour protection câbles. Applicable réseaux < 550kV. Distingue CC triphasé, biphasé, monophasé, biphasé-terre.'},
+  {r:'IEC 60947',t:'Appareillage basse tension',d:'Disjoncteurs, contacteurs, relais. Calibres, catégories utilisation, essais.',tags:['Appareillage','BT'],det:'60947-2 : disjoncteurs. 60947-4 : contacteurs AC-1 à AC-4. 60947-5 : commande. Courbes B, C, D. Pouvoir coupure Icu et Ics.'},
+  {r:'IEC 60529',t:'Degrés de protection IP & IK',d:'Indices de protection contre corps solides, liquides et chocs mécaniques.',tags:['Protection','IP'],det:'IP2X doigts. IP44 projections eau. IP55 jets. IP65 poussière+jets. IP67 immersion 1m. IK10 résiste 20J.'},
+  {r:'IEC 61439',t:'Tableaux de distribution BT',d:'Conception et vérification des TGBT et armoires de distribution.',tags:['Tableau','TGBT'],det:'Remplace CEI 60439 depuis 2014. Essais de routine et de type obligatoires. Marque CE obligatoire.'},
+  {r:'NFC 13-100',t:'Postes de livraison HTA/BT',d:'Construction et exploitation des postes de transformation HTA/BT en France.',tags:['HTA','Poste'],det:'Postes 6kV, 15kV, 20kV. Règles construction, distances sécurité, mise à la terre, protection HTA.'},
+  {r:'IEC 60269',t:'Fusibles basse tension',d:'Caractéristiques et coordination des fusibles BT industriels.',tags:['Fusible','Protection'],det:'gG usage général, aM accompagnement moteur, gM moteur. Calibres 2A à 1250A. Courbes I²t pour sélectivité.'},
+  {r:'IEC 60076',t:'Transformateurs de puissance',d:'Construction, essais et mise en service des transformateurs.',tags:['Transformateur','HTA'],det:'Pertes P0 et Pcc, Ucc%. Échauffements admissibles. Essais rapport, groupe vecteur, rigidité diélectrique.'},
+  {r:'EN 50160',t:'Qualité de l\'énergie électrique',d:'Caractéristiques de la tension fournie par les réseaux publics de distribution.',tags:['Qualité','Réseau'],det:'Fréquence 50Hz ±1%. Tension 230V ±10%. THD ≤8%. Base des études de qualité énergie.'},
+  {r:'IEC 62271',t:'Appareillage haute tension',d:'Disjoncteurs, sectionneurs, tableaux HTA. Règles de conception et essais.',tags:['HTA','Appareillage'],det:'62271-100 disjoncteurs HT. 62271-102 sectionneurs. 62271-200 postes sous enveloppe métallique.'},
+  {r:'IEC 61010',t:'Équipements de mesure — Sécurité',d:'Sécurité des instruments de mesure électrique. Catégories CAT II, III, IV.',tags:['Mesure','Sécurité'],det:'CAT II prises domestiques. CAT III tableaux BT. CAT IV branchement réseau. Multimètre CAT III 600V requis pour travaux sur tableaux industriels.'},
+];
+function renderNormes(q=''){const list=q?ND.filter(n=>n.r.toLowerCase().includes(q.toLowerCase())||n.t.toLowerCase().includes(q.toLowerCase())||n.tags.some(t=>t.toLowerCase().includes(q.toLowerCase()))):ND;el('nor-list',`<div style="margin-bottom:12px"><input type="text" placeholder="🔍 Rechercher une norme..." oninput="renderNormes(this.value)" style="border-radius:10px"></div>${list.map((n,i)=>`<div class="noc"><div class="nor">${n.r}</div><div class="not2">${n.t}</div><div style="font-size:12px;color:var(--muted);margin-bottom:6px">${n.d}</div><div style="display:flex;justify-content:space-between;align-items:center"><div>${n.tags.map(t=>`<span class="notg">${t}</span>`).join('')}</div><button class="edb" onclick="openNorm(${ND.indexOf(n)})" style="font-size:11px">📖 Détails</button></div></div>`).join('')}`);}
+function openNorm(i){const n=ND[i];el('fiche-mo-c',`<h3>${n.r} — ${n.t}</h3><div style="margin:8px 0">${n.tags.map(t=>`<span class="notg">${t}</span>`).join('')}</div><p style="font-size:12px;color:var(--muted);background:#f0f4ff;border-radius:10px;padding:12px;line-height:1.7;margin-top:8px">${n.det}</p>`);document.getElementById('fiche-mo').style.display='flex';}
+
+// ════ FICHES ════
+const FD=[
+  {i:'⚡',t:'Câbles Cu — Sections & Imax',l:'debutant',d:'Sections normalisées et courants max admissibles (pose encastrée, 30°C).',c:`<div class="rbox"><div class="rr"><span>1.5 mm²</span><b>14 A — Éclairage</b></div><div class="rr"><span>2.5 mm²</span><b>21 A — Prises 16A</b></div><div class="rr"><span>4 mm²</span><b>30 A — Cuisinière</b></div><div class="rr"><span>6 mm²</span><b>40 A — Chauffage, clim</b></div><div class="rr"><span>10 mm²</span><b>54 A — Tableau divisionnaire</b></div><div class="rr"><span>16 mm²</span><b>73 A — TGBT départ</b></div><div class="rr"><span>25 mm²</span><b>96 A — Arrivée principale</b></div><div class="rr"><span>35 mm²</span><b>116 A — Branchement industriel</b></div></div><div class="wb" style="margin-top:8px">⚠️ Réduire Imax de 15% si câble posé en conduit groupé. Al : ×0.78</div>`},
+  {i:'🛡️',t:'Calibres disjoncteurs — Usages',l:'debutant',d:'Correspondance usages / calibres selon NFC 15-100.',c:`<div class="rbox"><div class="rr"><span>2 A</span><b>Sonnerie, téléphone</b></div><div class="rr"><span>10 A</span><b>Éclairage, volets</b></div><div class="rr"><span>16 A</span><b>Prises de courant</b></div><div class="rr"><span>20 A</span><b>Lave-linge, lave-vaisselle</b></div><div class="rr"><span>25 A</span><b>Clim, sèche-linge</b></div><div class="rr"><span>32 A</span><b>Cuisinière, induction</b></div><div class="rr"><span>40 A</span><b>Chauffage général</b></div><div class="rr"><span>63 A</span><b>Disjoncteur de branchement</b></div></div>`},
+  {i:'🛡️',t:'Protections différentielles',l:'debutant',d:'Sensibilités, types et usages des DDR.',c:`<div class="rbox"><div class="rr"><span>10 mA</span><b>Salle de bain zone 1</b></div><div class="rr"><span>30 mA</span><b>Habitation — standard</b></div><div class="rr"><span>100 mA</span><b>Protection sélective machines</b></div><div class="rr"><span>300 mA</span><b>Protection incendie tableau</b></div><div class="rr"><span>Type AC</span><b>Courants sinusoïdaux</b></div><div class="rr"><span>Type A</span><b>AC + pulsés (électroménager)</b></div><div class="rr"><span>Type F</span><b>Variateurs, onduleurs</b></div><div class="rr"><span>Type B</span><b>Continus — PV, véhicule électrique</b></div></div>`},
+  {i:'🔌',t:'Indices de protection IP & IK',l:'debutant',d:'Choisir le bon matériel selon l\'environnement.',c:`<div class="rbox"><div class="rr"><span>IP20</span><b>Intérieur sec</b></div><div class="rr"><span>IP44</span><b>Projections eau</b></div><div class="rr"><span>IP55</span><b>Jets eau — ateliers</b></div><div class="rr"><span>IP65</span><b>Poussière + jets</b></div><div class="rr"><span>IP67</span><b>Immersion 30 min à 1m</b></div><div class="rr"><span>IP68</span><b>Immersion prolongée</b></div><div class="rr"><span>IK08</span><b>Résiste 5J — locaux publics</b></div><div class="rr"><span>IK10</span><b>Résiste 20J — vandalisme</b></div></div>`},
+  {i:'⚙️',t:'Contacteurs — Catégories AC',l:'inter',d:'Catégories IEC 60947-4 et choix selon l\'usage.',c:`<div class="rbox"><div class="rr"><span>AC-1</span><b>Résistif / faiblement inductif</b></div><div class="rr"><span>AC-2</span><b>Moteurs bagues — démarrage</b></div><div class="rr"><span>AC-3</span><b>Moteurs cage — démarrage direct ★</b></div><div class="rr"><span>AC-4</span><b>Inversion, freinage moteurs</b></div><div class="rr"><span>AC-5a</span><b>Éclairage fluorescent</b></div><div class="rr"><span>AC-6b</span><b>Batteries condensateurs</b></div></div><div class="wb" style="margin-top:8px">⚠️ Surdimensionner d'une catégorie pour démarrages fréquents (>60/h).</div>`},
+  {i:'🔄',t:'Démarrage moteurs — Comparatif',l:'inter',d:'Méthodes de démarrage pour moteurs triphasés cage.',c:`<div class="rbox"><div class="rr"><span>Direct (DOL)</span><b>Id=5-8×In | Couple=100%</b></div><div class="rr"><span>Étoile-Triangle</span><b>Id=Id/3 | Couple=33%</b></div><div class="rr"><span>Autotransfo</span><b>Id×k² | Couple×k²</b></div><div class="rr"><span>Démarreur progressif</span><b>Id=2-4×In | Couple réglable</b></div><div class="rr"><span>Variateur (VFD)</span><b>Id≈1.5×In | Couple=100%</b></div></div><div style="font-size:12px;color:var(--muted);margin-top:10px;padding:10px;background:#f0f4ff;border-radius:8px;line-height:1.7"><b>Choix :</b> Démarrage rare → Direct · Pompe/ventilo → Y-Δ · Convoyeur → Progressif · Vitesse variable → VFD</div>`},
+  {i:'🔋',t:'Compensation réactive — Calcul',l:'inter',d:'Calcul batterie condensateurs et réduction des pénalités.',c:`<div style="font-size:12px;color:var(--muted);background:#f0f4ff;border-radius:9px;padding:10px;margin-bottom:10px;line-height:1.7"><b>Formule :</b> Qc = P × (tan φ1 − tan φ2)<br>tan φ = √(1−cos²φ) / cos φ</div><div class="rbox"><div class="rr"><span>cos φ=0.7 → tan φ</span><b>1.020</b></div><div class="rr"><span>cos φ=0.8 → tan φ</span><b>0.750</b></div><div class="rr"><span>cos φ=0.85 → tan φ</span><b>0.620</b></div><div class="rr"><span>cos φ=0.9 → tan φ</span><b>0.484</b></div><div class="rr"><span>cos φ=0.95 → tan φ</span><b>0.329</b></div></div><div class="wb" style="margin-top:8px">⚠️ Risque de résonance : prévoir self anti-harmonique 5% ou 7%.</div>`},
+  {i:'📐',t:'Sélectivité des protections',l:'inter',d:'Coordination entre disjoncteurs pour assurer la continuité de service.',c:`<div class="rbox"><div class="rr"><span>Sélectivité ampèremétrique</span><b>Icc < Ir disj amont</b></div><div class="rr"><span>Sélectivité chronométrique</span><b>Décalage temporel t1 < t2</b></div><div class="rr"><span>Sélectivité logique</span><b>Signal de blocage</b></div><div class="rr"><span>Sélectivité énergétique</span><b>Discrimination par énergie</b></div></div><div style="font-size:12px;color:var(--muted);margin-top:10px;padding:10px;background:#f0f4ff;border-radius:8px"><b>Règle pratique :</b> calibre amont ≥ 1.6 × calibre aval pour sélectivité simple.</div>`},
+  {i:'🏭',t:'Moteurs — Calcul complet',l:'avance',d:'Formules pour dimensionnement et protection des moteurs asynchrones.',c:`<div class="rbox"><div class="rr"><span>Courant nominal In</span><b>Pn/(√3×U×cosφ×η)</b></div><div class="rr"><span>Démarrage direct Id</span><b>5 à 8 × In</b></div><div class="rr"><span>Couple nominal Tn</span><b>9550×Pn(kW)/n(tr/min)</b></div><div class="rr"><span>Glissement g</span><b>(ns−n)/ns × 100%</b></div><div class="rr"><span>Relais thermique</span><b>1.0 à 1.15 × In</b></div><div class="rr"><span>Disjoncteur moteur</span><b>Courbe D — 1.25 × In</b></div></div><div class="wb" style="margin-top:8px">⚠️ Moteur HT > 1kV : protection 87M obligatoire + RTD dans enroulements.</div>`},
+  {i:'⚡',t:'Court-circuit — Méthode IEC 60909',l:'avance',d:'Calcul Icc max et min pour dimensionner les protections.',c:`<div style="font-size:12px;color:var(--muted);background:#f0f4ff;border-radius:9px;padding:10px;margin-bottom:10px;line-height:1.7"><b>Icc = c × Un / (√3 × Z)</b><br>c=1.05 BT max / c=0.95 BT min<br><b>Zt = ucc% × Un² / (100 × Sn)</b><br><b>Zc = ρ × L / S</b></div><div class="rbox"><div class="rr"><span>c BT max (< 1kV)</span><b>1.05</b></div><div class="rr"><span>c BT min</span><b>0.95</b></div><div class="rr"><span>c HT max (≥ 1kV)</span><b>1.1</b></div><div class="rr"><span>ρ Cu 20°C</span><b>0.0172 Ω·mm²/m</b></div><div class="rr"><span>ρ Cu 70°C</span><b>0.0226 Ω·mm²/m</b></div><div class="rr"><span>ρ Al 20°C</span><b>0.0283 Ω·mm²/m</b></div></div>`},
+  {i:'🔧',t:'Variateurs de fréquence (VFD)',l:'avance',d:'Paramètres essentiels, raccordement et harmoniques.',c:`<div class="rbox"><div class="rr"><span>Fréquence sortie</span><b>0 à 400 Hz</b></div><div class="rr"><span>Courant démarrage</span><b>≈ 1.5 × In (vs 6-8× DOL)</b></div><div class="rr"><span>THD courant sans filtre</span><b>35-40%</b></div><div class="rr"><span>Câble blindé moteur</span><b>Obligatoire si L > 50m</b></div><div class="rr"><span>Filtre EMC min</span><b>Catégorie C2 industriel</b></div></div><div class="wb" style="margin-top:8px">⚠️ Ne jamais mettre contacteur entre variateur et moteur en fonctionnement. Self d\'entrée si Pn > 22kW.</div>`},
+  {i:'🏗️',t:'Protections transformateurs',l:'avance',d:'Schémas de protection et relais pour transformateurs.',c:`<div class="rbox"><div class="rr"><span>ANSI 50/51</span><b>Surintensité à temps inverse</b></div><div class="rr"><span>ANSI 87T</span><b>Différentiel transfo ★ obligatoire HT</b></div><div class="rr"><span>ANSI 49</span><b>Image thermique (surcharge)</b></div><div class="rr"><span>ANSI 64</span><b>Défaut terre enroulement</b></div><div class="rr"><span>Buchholz</span><b>Détection gaz internes (huile)</b></div><div class="rr"><span>Thermostats</span><b>Alarme 80°C / Trip 100°C</b></div></div>`},
+  {i:'📡',t:'Codes ANSI — Relais de protection',l:'avance',d:'Référence des codes ANSI/IEEE pour relais industriels.',c:`<div class="rbox"><div class="rr"><span>ANSI 21</span><b>Distance (impédance)</b></div><div class="rr"><span>ANSI 27</span><b>Sous-tension</b></div><div class="rr"><span>ANSI 46</span><b>Séquence négative (déséquilibre)</b></div><div class="rr"><span>ANSI 49</span><b>Image thermique moteur</b></div><div class="rr"><span>ANSI 50/51</span><b>Surintensité inst./temporisé</b></div><div class="rr"><span>ANSI 59</span><b>Surtension</b></div><div class="rr"><span>ANSI 67</span><b>Surintensité directionnelle</b></div><div class="rr"><span>ANSI 79</span><b>Réenclencheur automatique</b></div><div class="rr"><span>ANSI 87</span><b>Différentiel (transfo, moteur)</b></div></div>`},
+  {i:'📊',t:'Harmoniques — Analyse & Filtrage',l:'avance',d:'Harmoniques dans les installations industrielles.',c:`<div class="rbox"><div class="rr"><span>Rang 5 (250Hz)</span><b>Variateurs, redresseurs 6 pulses</b></div><div class="rr"><span>Rang 7 (350Hz)</span><b>Variateurs, UPS</b></div><div class="rr"><span>Rang 3 (150Hz)</span><b>Fluo, PC, chargeurs</b></div><div class="rr"><span>THD-I limite réseau</span><b>< 8% (EN 50160)</b></div></div><div style="font-size:12px;color:var(--muted);margin-top:10px;padding:10px;background:#f0f4ff;border-radius:8px;line-height:1.7"><b>Solutions :</b><br>• Self entrée variateur (réduction 5-7%)<br>• Filtre passif accordé rang 5/7<br>• Filtre actif APF (efficacité 95%)<br>• Redresseur 12 pulses (élimine rangs 5 et 7)</div>`},
+];
+function renderFiches(q=''){const list=q?FD.filter(f=>f.t.toLowerCase().includes(q.toLowerCase())||f.d.toLowerCase().includes(q.toLowerCase())):FD;const bL={debutant:[],inter:[],avance:[]};list.forEach(f=>(bL[f.l]||bL.debutant).push(f));el('fic-list',`<div style="margin-bottom:12px"><input type="text" placeholder="🔍 Rechercher une fiche..." oninput="renderFiches(this.value)" style="border-radius:10px"></div>${Object.entries(bL).map(([lv,fiches])=>fiches.length?`<div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin:12px 0 7px">${lv==='debutant'?'🟢 Débutant':lv==='inter'?'🟡 Intermédiaire':'🔴 Avancé'} — ${fiches.length}</div>${fiches.map(f=>`<div class="fch" onclick="openFiche(${FD.indexOf(f)})"><div style="display:flex;align-items:center;gap:10px"><div class="cico cb" style="font-size:18px">${f.i}</div><div style="flex:1"><div style="font-size:13px;font-weight:700">${f.t}</div><div style="font-size:11px;color:var(--muted)">${f.d}</div></div><span class="fl ${lv==='debutant'?'fdeb':lv==='inter'?'fint':'fav'}">${lv==='debutant'?'Déb.':lv==='inter'?'Inter.':'Avancé'}</span></div></div>`).join('')}`:'').join('')}`);}
+function openFiche(i){const f=FD[i];el('fiche-mo-c',`<div style="display:flex;align-items:center;gap:10px;margin-bottom:12px"><div class="cico cb" style="font-size:20px">${f.i}</div><div><h3 style="margin-bottom:4px">${f.t}</h3><span class="fl ${f.l==='debutant'?'fdeb':f.l==='inter'?'fint':'fav'}">${f.l==='debutant'?'🟢 Débutant':f.l==='inter'?'🟡 Intermédiaire':'🔴 Avancé'}</span></div></div><p style="font-size:12px;color:var(--muted);margin-bottom:12px;line-height:1.6">${f.d}</p>${f.c}`);document.getElementById('fiche-mo').style.display='flex';}
+
+// ════ QUIZ ════
+const QZ=[
+  {q:'Section câble Cu pour circuit prises 16A ?',o:['1.5 mm²','2.5 mm²','4 mm²','6 mm²'],c:1,l:'debutant',e:'2.5 mm² supporte 21A, suffisant pour prises 16A. 1.5 mm² réservé à l\'éclairage.'},
+  {q:'Sensibilité standard d\'un différentiel en habitation ?',o:['10 mA','30 mA','100 mA','300 mA'],c:1,l:'debutant',e:'30 mA standard NFC 15-100 pour protection personnes. 10 mA réservé salles de bain zone 1.'},
+  {q:'Calibre disjoncteur pour une cuisinière électrique ?',o:['16 A','20 A','25 A','32 A'],c:3,l:'debutant',e:'32A pour cuisinière ou plaque induction (6-8kW). Câble 6mm² sur circuit dédié.'},
+  {q:'IP minimum en salle de bain zone 2 ?',o:['IP20','IP44','IP55','IP65'],c:1,l:'debutant',e:'IP44 minimum zone 2 (projections eau). Zone 1 : IP45. Zone 0 (dans baignoire) : IP67.'},
+  {q:'Quelle courbe de disjoncteur pour un moteur ?',o:['Courbe B','Courbe C','Courbe D','Courbe K'],c:2,l:'debutant',e:'Courbe D (10-20×In) tolère forts courants de démarrage sans déclencher. Idéale pour moteurs.'},
+  {q:'Moteur 400V, 7.5kW, cosφ=0.85, η=90% → courant nominal ?',o:['10.2 A','14.2 A','18.5 A','22.0 A'],c:1,l:'inter',e:'In = 7500/(√3×400×0.85×0.9) = 7500/529 ≈ 14.2 A. Formule : Pn/(√3×U×cosφ×η).'},
+  {q:'Démarrage Y-Δ réduit le courant de combien ?',o:['25%','50%','67%','75%'],c:2,l:'inter',e:'Y-Δ réduit Id à 1/3, soit une réduction de 67%. Mais couple aussi réduit à 1/3 du nominal.'},
+  {q:'Catégorie contacteur pour moteur cage démarrage direct ?',o:['AC-1','AC-2','AC-3','AC-4'],c:2,l:'inter',e:'AC-3 standard pour moteurs cage démarrage direct. AC-4 pour inversion ou freinage.'},
+  {q:'Déséquilibre phases triphasées max toléré ?',o:['2%','5%','10%','20%'],c:2,l:'inter',e:'Au-delà de 10%, échauffements, vibrations et réduction durée de vie des moteurs.'},
+  {q:'Formule puissance condensateurs de compensation ?',o:['Qc = P × cosφ','Qc = P × (tanφ1 − tanφ2)','Qc = U² / C','Qc = P / cosφ'],c:1,l:'inter',e:'Qc = P × (tanφ1 − tanφ2). Donne la puissance réactive à compenser pour passer de cosφ1 à cosφ2.'},
+  {q:'Facteur c pour Icc max en BT selon IEC 60909 ?',o:['0.95','1.0','1.05','1.1'],c:2,l:'avance',e:'c=1.05 pour Icc max en BT (<1kV). c=0.95 pour Icc min. c=1.1 pour HT (≥1kV).'},
+  {q:'Protection ANSI pour différentiel transformateur ?',o:['ANSI 49','ANSI 50','ANSI 64','ANSI 87T'],c:3,l:'avance',e:'ANSI 87T est la protection différentielle transformateur. Compare courants primaire et secondaire.'},
+  {q:'Rang harmonique dominant d\'un variateur 6 pulses ?',o:['Rang 3','Rang 5','Rang 7','Rang 11'],c:1,l:'avance',e:'Rangs 5 et 7 sont dominants (6n±1). Redresseur 12 pulses ou filtre actif pour les éliminer.'},
+  {q:'Résistivité du cuivre à 70°C ?',o:['0.0172 Ω·mm²/m','0.0200 Ω·mm²/m','0.0226 Ω·mm²/m','0.0283 Ω·mm²/m'],c:2,l:'avance',e:'ρ70 = ρ20×(1+0.004×50) ≈ 0.0172×1.32 ≈ 0.0226 Ω·mm²/m. Important pour calcul précis chutes de tension.'},
+  {q:'Protection ANSI pour déséquilibre d\'alimentation moteur ?',o:['ANSI 27','ANSI 46','ANSI 49','ANSI 59'],c:1,l:'avance',e:'ANSI 46 = protection séquence négative. Détecte déséquilibre d\'alimentation qui cause échauffements moteur.'},
+];
+let qzFilter=[],qzIdx=0,qzScore=0;
+function renderQuiz(){el('quiz-wrap',`<div class="card"><div style="display:flex;align-items:center;gap:10px;margin-bottom:14px"><div class="cico" style="background:rgba(124,58,237,.08);border:1px solid rgba(124,58,237,.15);font-size:18px">🎓</div><div><div style="font-size:14px;font-weight:700">Quiz Électrotechnique</div><div style="font-size:11px;color:var(--muted)">${QZ.length} questions — 3 niveaux</div></div></div><div style="display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap"><button class="btn bg2 bsm" onclick="startQz('all')" style="flex:1">📚 Tout</button><button class="btn bg2 bsm" onclick="startQz('debutant')" style="flex:1">🟢 Déb.</button><button class="btn bg2 bsm" onclick="startQz('inter')" style="flex:1">🟡 Inter.</button><button class="btn bg2 bsm" onclick="startQz('avance')" style="flex:1">🔴 Avancé</button></div><div class="pbr"><div class="pbf" id="qz-p" style="width:0%"></div></div><div id="qz-c"><p style="text-align:center;color:var(--muted);font-size:13px;padding:16px">Choisissez un niveau pour commencer</p></div></div>`);}
+function startQz(l){qzFilter=l==='all'?[...QZ]:QZ.filter(q=>q.l===l);qzIdx=0;qzScore=0;rQz();}
+function rQz(){if(!qzFilter.length)return;document.getElementById('qz-p').style.width=(qzIdx/qzFilter.length*100).toFixed(0)+'%';if(qzIdx>=qzFilter.length){const p=Math.round(qzScore/qzFilter.length*100);el('qz-c',`<div style="text-align:center;padding:14px 0"><div style="font-size:40px">${p>=80?'🏆':p>=60?'🥈':'📚'}</div><div style="font-family:Orbitron,monospace;font-size:24px;font-weight:700;color:var(--blue);margin:8px 0">${qzScore}/${qzFilter.length}</div><div style="font-size:14px;font-weight:600">${p>=80?'Excellent !':p>=60?'Bien !':'Révisez les fiches.'}</div><div style="font-size:12px;color:var(--muted);margin:4px 0 14px">Score : ${p}%</div><div style="display:flex;gap:7px;justify-content:center"><button class="btn bp bsm" onclick="startQz('all')">🔄 Recommencer</button><button class="btn bg2 bsm" onclick="sTab('ref','fic',document.querySelectorAll('#page-normes .tabs .tab')[1])">📋 Fiches</button></div></div>`);return;}const q=qzFilter[qzIdx];const nl={debutant:'🟢',inter:'🟡',avance:'🔴'};el('qz-c',`<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><div style="font-size:11px;color:var(--muted)">Q ${qzIdx+1}/${qzFilter.length}</div><span style="font-size:11px;font-weight:700">${nl[q.l]||''} ${q.l}</span></div><div style="font-size:14px;font-weight:600;color:var(--dark);margin-bottom:14px;line-height:1.5">${q.q}</div><div id="qz-o">${q.o.map((o,i)=>`<div class="qop" onclick="ansQz(${i})">${o}</div>`).join('')}</div><div id="qz-e" style="display:none;margin-top:10px;background:#f0f4ff;border:1px solid var(--border);border-radius:10px;padding:11px;font-size:12px;color:var(--muted);line-height:1.6"></div><button id="qz-nx" class="btn bp" onclick="nextQz()" style="display:none;margin-top:10px">Suivant →</button>`);}
+function ansQz(i){const q=qzFilter[qzIdx];document.querySelectorAll('.qop').forEach((o,j)=>{o.style.pointerEvents='none';if(j===q.c)o.classList.add('cor');else if(j===i&&i!==q.c)o.classList.add('wrg');});if(i===q.c)qzScore++;el('qz-e','💡 '+q.e);document.getElementById('qz-e').style.display='block';document.getElementById('qz-nx').style.display='block';}
+function nextQz(){qzIdx++;rQz();}
+
+// ════ RAPPORT ════
+function genRapport(){const p=profil,w=window.open('','_blank');const tc=p.nom?`<div style="background:#f0f4ff;border:1px solid #d0dcff;border-radius:8px;padding:12px;font-size:11px;line-height:1.9"><b style="font-size:13px;color:#0055ff">${p.entreprise||p.nom}</b><br>${p.nom&&p.entreprise?p.nom+(p.titre?' — '+p.titre:'')+'<br>':''}${p.adresse?'📍 '+p.adresse+'<br>':''}${p.tel?'📞 '+p.tel+'<br>':''}${p.email?'✉️ '+p.email+'<br>':''}${p.agrement?'Agrément : '+p.agrement+'<br>':''}${p.rccm?'RCCM/NIF : '+p.rccm:''}</div>`:'<div style="font-size:12px;color:#5a6a9a">WB ElectroTech</div>';w.document.write(`<html><head><title>Rapport</title><style>*{box-sizing:border-box}body{font-family:Arial,sans-serif;padding:15mm;color:#08102b;max-width:210mm;margin:0 auto}.hdr{display:flex;justify-content:space-between;border-bottom:2px solid #0055ff;padding-bottom:12px;margin-bottom:18px}.sec{margin-bottom:14px}.st{font-size:10px;font-weight:700;color:#0055ff;text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px;border-bottom:1px solid #d0dcff;padding-bottom:4px}.content{font-size:12px;line-height:1.8;color:#5a6a9a;background:#f8faff;border-radius:6px;padding:10px}.sign{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:24px}.sb{border:1px solid #d0dcff;border-radius:6px;padding:12px;min-height:60px;font-size:10px;font-weight:700;color:#5a6a9a;text-transform:uppercase;letter-spacing:.5px}.footer{margin-top:20px;font-size:9px;color:#5a6a9a;text-align:center;border-top:1px solid #d0dcff;padding-top:10px}@media print{@page{size:A4;margin:10mm}}</style></head><body><div class="hdr"><div><div style="font-size:18px;font-weight:900;color:#0055ff">⚡ ${p.entreprise||'WB ElectroTech'}</div>${p.slogan?`<div style="font-size:11px;color:#5a6a9a;font-style:italic">"${p.slogan}"</div>`:''}</div><div style="text-align:right"><div style="font-size:14px;font-weight:900">RAPPORT D'INTERVENTION</div><div style="font-size:11px;color:#5a6a9a">Date : ${v2('rp-date')||new Date().toLocaleDateString('fr-FR')}</div></div></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px"><div class="sec"><div class="st">Émetteur</div>${tc}</div><div class="sec"><div class="st">Site / Client</div><div style="background:#f8faff;border:1px solid #d0dcff;border-radius:8px;padding:12px;font-size:11px;line-height:1.9"><b>${v2('rp-cl')||'—'}</b><br>📍 ${v2('rp-adr')||'—'}<br>Objet : ${v2('rp-t')||'—'}</div></div></div><div class="sec"><div class="st">Travaux effectués</div><div class="content">${v2('rp-trav')||'—'}</div></div><div class="sec"><div class="st">Anomalies constatées</div><div class="content">${v2('rp-ano')||'Aucune anomalie'}</div></div><div class="sec"><div class="st">Recommandations</div><div class="content">${v2('rp-rec')||'Aucune'}</div></div><div class="sec"><div class="st">Matériaux utilisés</div><div class="content">${v2('rp-mat')||'—'}</div></div><div class="sec"><div class="st">Statut de l'installation</div><div style="display:inline-block;background:#0055ff;color:#fff;border-radius:6px;padding:5px 14px;font-size:12px;font-weight:700;margin-top:5px">${v2('rp-stat')||'Conforme'}</div></div><div class="sign"><div class="sb">Signature technicien${p.nom?' — '+p.nom:''}</div><div class="sb">Signature client / Cachet</div></div><div class="footer">${p.entreprise||'WB ElectroTech'}${p.adresse?' — '+p.adresse:''}${p.tel?' — Tél : '+p.tel:''}<br>Rapport généré le ${new Date().toLocaleDateString('fr-FR')}</div><script>window.onload=()=>window.print()<\/script></body></html>`);}
+
+// ════ DEVIS ════
+function resetDv(){dvItems=[{id:'i1',nom:'',qte:1,pu:0}];['dv-cl','dv-tel','dv-ref','dv-notes'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});const dd=document.getElementById('dv-date');if(dd)dd.value=new Date().toISOString().split('T')[0];['dv-mo','dv-dep','dv-rem'].forEach(id=>{const e=document.getElementById(id);if(e)e.value=0;});const tv=document.getElementById('dv-tva');if(tv)tv.value=18;rDvItems();}
+function addDvItem(){dvItems.push({id:'i'+Date.now(),nom:'',qte:1,pu:0});rDvItems();}
+function rDvItems(){el('dv-items',dvItems.map((it,i)=>`<div class="dvir"><input type="text" value="${it.nom}" placeholder="Désignation" oninput="dvItems[${i}].nom=this.value"><input type="number" value="${it.qte}" min="0" step="0.1" oninput="dvItems[${i}].qte=+this.value;rDvTotal()"><input type="number" value="${it.pu}" min="0" oninput="dvItems[${i}].pu=+this.value;rDvTotal()"><input type="text" readonly value="${((it.qte||0)*(it.pu||0)).toLocaleString()}" style="color:var(--blue);font-weight:600"><button onclick="dvItems.splice(${i},1);rDvItems();rDvTotal()" style="background:rgba(255,23,68,.08);border:1px solid rgba(255,23,68,.18);color:var(--red);border-radius:7px;padding:4px 7px;cursor:pointer;font-size:12px">✕</button></div>`).join(''));rDvTotal();}
+function rDvTotal(){const dev=v2('dv-dev')||'FCFA',sm=dvItems.reduce((s,it)=>s+(it.qte||0)*(it.pu||0),0),mo=+v2('dv-mo')||0,dep=+v2('dv-dep')||0,rem=+v2('dv-rem')||0,tva=+v2('dv-tva')||18;const st=sm+mo+dep,rm=st*rem/100,ht=st-rm,tv=ht*tva/100,ttc=ht+tv;el('dv-total-bar',`<div class="dtr"><span>Sous-total matériaux</span><span>${sm.toLocaleString()} ${dev}</span></div><div class="dtr"><span>Main d'œuvre</span><span>${mo.toLocaleString()} ${dev}</span></div>${dep>0?`<div class="dtr"><span>Déplacement</span><span>${dep.toLocaleString()} ${dev}</span></div>`:''} ${rem>0?`<div class="dtr"><span>Remise (${rem}%)</span><span>- ${rm.toLocaleString()} ${dev}</span></div>`:''}<div class="dtr"><span>Total HT</span><span>${ht.toLocaleString()} ${dev}</span></div><div class="dtr"><span>TVA (${tva}%)</span><span>${tv.toLocaleString()} ${dev}</span></div><div class="dtf"><span>TOTAL TTC</span><span>${ttc.toLocaleString()} ${dev}</span></div>`);}
+function saveDevis(){const dev=v2('dv-dev')||'FCFA',sm=dvItems.reduce((s,it)=>s+(it.qte||0)*(it.pu||0),0),mo=+v2('dv-mo')||0,dep=+v2('dv-dep')||0,rem=+v2('dv-rem')||0,tva=+v2('dv-tva')||18;const st=sm+mo+dep,rm=st*rem/100,ht=st-rm,tvaM=ht*tva/100,ttc=ht+tvaM;const d={id:editId||'d'+Date.now(),client:v2('dv-cl')||'Client',tel:v2('dv-tel')||'',ref:v2('dv-ref')||'',date:v2('dv-date')||new Date().toLocaleDateString('fr-FR'),type:v2('dv-type'),items:[...dvItems],mo,dep,rem,tva,devise:dev,sm,ht,tvaM,ttc,statut:v2('dv-stat')||'En attente',notes:v2('dv-notes')||''};if(editId){const i=devis.findIndex(x=>x.id===editId);if(i>=0)devis[i]=d;}else devis.unshift(d);S('devis',devis);closeMo('dv-mo');rDevis();rHome();}
+function rDevis(){el('dv-tot',devis.length);el('dv-ca',(devis.reduce((s,d)=>s+(d.ttc||0),0)/1000).toFixed(0)+'K');const bc={'En attente':'byw','Accepté':'bgn','Refusé':'brd','Facturé':'bbl'};el('dv-list',devis.length?devis.map(d=>`<div class="card" style="padding:13px;margin-bottom:10px"><div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px"><div><div style="font-weight:700;font-size:14px">${d.client}</div><div style="font-size:11px;color:var(--muted)">${d.ref?d.ref+' • ':''} ${d.date}</div></div><div style="text-align:right"><div style="font-family:Orbitron,monospace;font-size:13px;font-weight:700;color:var(--blue)">${(d.ttc||0).toLocaleString()}</div><div style="font-size:10px;color:var(--muted)">${d.devise||'FCFA'}</div></div></div><div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:8px"><span class="bdg ${bc[d.statut]||'byw'}">${d.statut}</span>${d.items?.length?`<span class="bdg bgr">${d.items.length} ligne(s)</span>`:''}</div><div style="display:flex;gap:6px;flex-wrap:wrap"><button class="btn bp bsm" onclick="dlDevis('${d.id}')">⬇ PDF</button><button class="btn bg2 bsm" onclick="editDv('${d.id}')">✏️</button><button class="btn br2 bsm" onclick="devis=devis.filter(x=>x.id!=='${d.id}');S('devis',devis);rDevis();rHome()">🗑️</button></div></div>`).join(''):'<div class="empty">Aucun devis</div>');}
+function editDv(id){const d=devis.find(x=>x.id===id);if(!d)return;editId=id;document.getElementById('dv-mo-t').textContent='Modifier devis';dvItems=d.items?[...d.items]:[{id:'i1',nom:'',qte:1,pu:0}];['cl','tel','ref','notes'].forEach(k=>{const e=document.getElementById('dv-'+k);if(e)e.value=d[k]||'';});document.getElementById('dv-date').value=d.date||'';document.getElementById('dv-mo').value=d.mo||0;document.getElementById('dv-dep').value=d.dep||0;document.getElementById('dv-rem').value=d.rem||0;document.getElementById('dv-tva').value=d.tva||18;document.getElementById('dv-stat').value=d.statut||'En attente';document.getElementById('dv-mo').style.display='flex';rDvItems();}
+function dlDevis(id){
+  const d=devis.find(x=>x.id===id);if(!d)return;
+  const p=profil,dev=d.devise||'FCFA';
+  const rows=(d.items||[]).map((it,i)=>`<tr><td>${i+1}</td><td>${it.nom||'—'}</td><td style="text-align:right">${it.qte}</td><td style="text-align:right">${(it.pu||0).toLocaleString()}</td><td style="text-align:right;font-weight:600">${((it.qte||0)*(it.pu||0)).toLocaleString()}</td></tr>`).join('');
+  const element=document.createElement('div');
+  element.innerHTML=`<div style="font-family:Arial,sans-serif;padding:15mm;color:#08102b;max-width:210mm;margin:0 auto"><div style="display:flex;justify-content:space-between;border-bottom:3px solid #0055ff;padding-bottom:12px;margin-bottom:18px"><div><div style="font-size:20px;font-weight:900;color:#0055ff">⚡ ${p.entreprise||'WB ElectroTech'}</div>${p.adresse?`<div style="font-size:11px;color:#5a6a9a">📍 ${p.adresse}</div>`:''}</div><div style="text-align:right"><div style="font-weight:900;font-size:15px">DEVIS N° ${d.ref||d.id.substring(0,8).toUpperCase()}</div><div style="font-size:11px;color:#5a6a9a">Date : ${d.date} | ${d.statut}</div></div></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px"><div style="background:#f8faff;border:1px solid #d0dcff;border-radius:8px;padding:12px;font-size:11px;line-height:1.9"><div style="font-size:10px;font-weight:700;color:#0055ff;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">Technicien / Entreprise</div>${p.nom?`<b>${p.nom}</b>${p.titre?' — '+p.titre:''}<br>`:''}${p.tel?`📞 ${p.tel}<br>`:''}${p.email?`✉️ ${p.email}<br>`:''}${p.agrement?`Agrément : ${p.agrement}<br>`:''}${p.rccm?`RCCM : ${p.rccm}`:'WB ElectroTech'}</div><div style="background:#f8faff;border:1px solid #d0dcff;border-radius:8px;padding:12px;font-size:11px;line-height:1.9"><div style="font-size:10px;font-weight:700;color:#0055ff;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">Client</div><b style="font-size:13px">${d.client}</b><br>${d.tel?`📞 ${d.tel}<br>`:''}${d.type}</div></div><table style="width:100%;border-collapse:collapse;margin:14px 0;font-size:11px"><thead><tr style="background:#0055ff;color:#fff"><th style="padding:8px 10px;text-align:left">#</th><th style="padding:8px 10px;text-align:left">Désignation</th><th style="padding:8px 10px;text-align:right">Qté</th><th style="padding:8px 10px;text-align:right">P.U. (${dev})</th><th style="padding:8px 10px;text-align:right">Total (${dev})</th></tr></thead><tbody>${rows}${d.mo>0?`<tr><td style="padding:7px 10px"></td><td style="padding:7px 10px"><b>Main d'œuvre</b></td><td style="padding:7px 10px"></td><td style="padding:7px 10px"></td><td style="padding:7px 10px;text-align:right;font-weight:600">${d.mo.toLocaleString()}</td></tr>`:''}${d.dep>0?`<tr><td style="padding:7px 10px"></td><td style="padding:7px 10px"><b>Frais déplacement</b></td><td style="padding:7px 10px"></td><td style="padding:7px 10px"></td><td style="padding:7px 10px;text-align:right;font-weight:600">${d.dep.toLocaleString()}</td></tr>`:''}</tbody></table><div style="margin-left:auto;width:260px">${d.rem>0?`<div style="display:flex;justify-content:space-between;padding:4px 0;font-size:12px;border-bottom:1px solid #e6ecff;color:#5a6a9a"><span>Remise (${d.rem}%)</span><span>—</span></div>`:''}<div style="display:flex;justify-content:space-between;padding:4px 0;font-size:12px;border-bottom:1px solid #e6ecff;color:#5a6a9a"><span>Total HT</span><span>${(d.ht||0).toLocaleString()} ${dev}</span></div><div style="display:flex;justify-content:space-between;padding:4px 0;font-size:12px;border-bottom:1px solid #e6ecff;color:#5a6a9a"><span>TVA (${d.tva||18}%)</span><span>${(d.tvaM||0).toLocaleString()} ${dev}</span></div><div style="font-weight:900;font-size:15px;color:#0055ff;padding:8px 0;border-top:2px solid #0055ff;display:flex;justify-content:space-between"><span>TOTAL TTC</span><span>${(d.ttc||0).toLocaleString()} ${dev}</span></div></div>${d.notes?`<div style="font-size:11px;color:#5a6a9a;background:#f8faff;border-radius:8px;padding:10px;margin-top:12px;line-height:1.7"><b>Notes :</b> ${d.notes}</div>`:''}`;
+  document.body.appendChild(element);
+  const {html2pdf}=window;
+  html2pdf().set({margin:10,filename:'devis-'+(d.ref||'').replace(/\//g,'-')+'.pdf',image:{type:'jpeg',quality:0.98},html2canvas:{scale:2},jsPDF:{orientation:'portrait',unit:'mm',format:'a4'}}).from(element).save().then(()=>{document.body.removeChild(element);});
+}
+
+// ════ STOCK ════
+function resetSk(){['sk-n','sk-r','sk-four'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});document.getElementById('sk-q').value=10;document.getElementById('sk-s').value=3;document.getElementById('sk-pu').value=0;}
+function saveStock(){const n=v2('sk-n');if(!n)return;const sk={id:editId||'s'+Date.now(),nom:n,ref:v2('sk-r')||'—',qty:+v2('sk-q')||0,seuil:+v2('sk-s')||3,unite:v2('sk-u')||'pièce',pu:+v2('sk-pu')||0,devise:v2('sk-dev')||'FCFA',four:v2('sk-four')||''};if(editId){const i=stock.findIndex(x=>x.id===editId);if(i>=0)stock[i]=sk;}else stock.push(sk);S('stock',stock);closeMo('sk-mo');resetSk();rStock();rHome();}
+function editSk(id){const s=stock.find(x=>x.id===id);if(!s)return;editId=id;document.getElementById('sk-mo-t').textContent='Modifier';document.getElementById('sk-n').value=s.nom;document.getElementById('sk-r').value=s.ref;document.getElementById('sk-q').value=s.qty;document.getElementById('sk-s').value=s.seuil;document.getElementById('sk-u').value=s.unite;document.getElementById('sk-pu').value=s.pu||0;document.getElementById('sk-four').value=s.four||'';openMo('sk-mo');}
+function updQty(id,d){const s=stock.find(x=>x.id===id);if(s)s.qty=Math.max(0,s.qty+d);S('stock',stock);rStock();rHome();}
+function rStock(){el('sk-list',stock.length?stock.map(s=>{const ok=s.qty>s.seuil,low=s.qty>0&&s.qty<=s.seuil,zero=s.qty===0;return`<div class="ski"><div style="font-size:20px">📦</div><div style="flex:1"><div style="font-size:13px;font-weight:600">${s.nom}</div><div style="font-size:10px;color:var(--muted)">${s.ref} • ${s.unite}${s.four?' • '+s.four:''}</div>${s.pu>0?`<div style="font-size:10px;color:var(--blue);font-weight:600">${s.pu.toLocaleString()} ${s.devise||'FCFA'}/u</div>`:''}</div><div style="display:flex;align-items:center;gap:6px"><button class="qb" onclick="updQty('${s.id}',-1)">−</button><span style="font-family:Orbitron,monospace;font-size:14px;font-weight:700;min-width:26px;text-align:center">${s.qty}</span><button class="qb" onclick="updQty('${s.id}',1)">+</button></div><span class="bdg ${zero?'brd':low?'byw':'bgn'}" style="margin-left:4px">${zero?'Rupture':low?'Bas':'OK'}</span><button class="edb" onclick="editSk('${s.id}')" style="margin-left:4px">✏️</button><button onclick="stock=stock.filter(x=>x.id!=='${s.id}');S('stock',stock);rStock();rHome()" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:14px;padding:3px">✕</button></div>`}).join(''):'<div class="empty">Aucun matériau</div>');}
+
+// ════ CLIENTS ════
+function resetCl(){['cl-n','cl-t','cl-e','cl-adr','cl-d','cl-a'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});setStar(0);}
+function setStar(n){starVal=n;document.querySelectorAll('#star-row span').forEach((s,i)=>s.style.opacity=i<n?'1':'.25');}
+function saveClient(){const n=v2('cl-n');if(!n)return;const cl={id:editId||'c'+Date.now(),nom:n,tel:v2('cl-t')||'—',email:v2('cl-e')||'',adresse:v2('cl-adr')||'',type:v2('cl-ty'),desc:v2('cl-d')||'',note:starVal,avis:v2('cl-a')||'',date:new Date().toLocaleDateString('fr-FR')};if(editId){const i=clients.findIndex(x=>x.id===editId);if(i>=0)clients[i]=cl;}else clients.unshift(cl);S('clients',clients);closeMo('cl-mo');resetCl();rClients();rHome();}
+function editCl(id){const c=clients.find(x=>x.id===id);if(!c)return;editId=id;document.getElementById('cl-mo-t').textContent='Modifier client';document.getElementById('cl-n').value=c.nom;document.getElementById('cl-t').value=c.tel;document.getElementById('cl-e').value=c.email||'';document.getElementById('cl-adr').value=c.adresse||'';document.getElementById('cl-ty').value=c.type;document.getElementById('cl-d').value=c.desc;document.getElementById('cl-a').value=c.avis;setStar(c.note||0);openMo('cl-mo');}
+function rClients(){el('cl-list',clients.length?clients.map(c=>`<div class="clc"><div style="display:flex;align-items:center;gap:10px;margin-bottom:7px"><div class="av">${c.nom.charAt(0).toUpperCase()}</div><div style="flex:1"><div style="font-weight:700;font-size:14px">${c.nom}</div><div style="font-size:11px;color:var(--muted)">${c.tel}${c.email?' • '+c.email:''}</div></div>${c.note?`<div style="color:var(--blue);font-size:13px">${'★'.repeat(c.note)}</div>`:''}</div><span class="bdg bbl">${c.type}</span>${c.desc?`<p style="font-size:12px;color:var(--muted);margin-top:7px;line-height:1.5">${c.desc}</p>`:''}<div style="display:flex;gap:6px;margin-top:8px"><button class="edb" onclick="editCl('${c.id}')">✏️ Modifier</button><button onclick="clients=clients.filter(x=>x.id!=='${c.id}');S('clients',clients);rClients();rHome()" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:11px">Supprimer</button></div></div>`).join(''):'<div class="empty">Aucun client</div>');}
+
+// ════ CHANTIERS ════
+function saveCh(){const nom=v2('ch-nom');if(!nom)return;const ch={id:editId||'ch'+Date.now(),nom,tech:v2('ch-tech')||'—',client:v2('ch-cl')||'—',adresse:v2('ch-adr')||'—',debut:v2('ch-deb')||'—',fin:v2('ch-fin')||'—',type:v2('ch-type'),travaux:v2('ch-trav'),priorite:v2('ch-pri')||'normale',desc:v2('ch-desc')||'',plan:v2('ch-plan')||'',recommandations:v2('ch-rec')||'',statut:'en_cours',notes:[],created:new Date().toLocaleDateString('fr-FR')};if(editId){const i=chants.findIndex(x=>x.id===editId);if(i>=0)chants[i]=ch;}else chants.unshift(ch);S('chants',chants);editId=null;['ch-nom','ch-tech','ch-cl','ch-desc','ch-plan','ch-rec'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});closeMo('ch-mo');rChants();rHome();}
+function rChants(){const tot=chants.length,enc=chants.filter(c=>c.statut==='en_cours').length;el('ch-tot',tot);el('ch-enc',enc);const sc={'en_cours':'bbl','termine':'bgn','pause':'byw','annule':'brd'},sl={'en_cours':'En cours','termine':'Terminé ✅','pause':'En pause','annule':'Annulé'};el('ch-list',chants.length?chants.map(ch=>`<div class="chc ${ch.priorite}" onclick="openChDet('${ch.id}')"><div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px"><div style="flex:1"><div style="font-weight:700;font-size:14px;margin-bottom:2px">${ch.nom}</div><div style="font-size:11px;color:var(--muted)">🔧 ${ch.tech} • 👤 ${ch.client}</div></div><span class="bdg ${sc[ch.statut]||'bbl'}">${sl[ch.statut]||ch.statut}</span></div><div style="font-size:11px;color:var(--muted);margin-bottom:6px">📍 ${ch.adresse} • ${ch.type} — ${ch.travaux}</div><div style="display:flex;justify-content:space-between"><span class="bdg ${ch.priorite==='urgente'?'brd':ch.priorite==='haute'?'byw':'bgn'}" style="font-size:10px">${ch.priorite==='urgente'?'🔴 Urgent':ch.priorite==='haute'?'🟡 Haute':'🟢 Normale'}</span><div style="font-size:10px;color:var(--muted)">📅 ${ch.debut} → ${ch.fin}</div></div>${ch.notes?.length?`<div style="margin-top:5px;font-size:10px;color:var(--blue)">💬 ${ch.notes.length} note(s)</div>`:''}</div>`).join(''):'<div class="empty">Aucun chantier</div>');}
+function openChDet(id){const ch=chants.find(x=>x.id===id);if(!ch)return;const sc={'en_cours':'bbl','termine':'bgn','pause':'byw','annule':'brd'},sl={'en_cours':'En cours','termine':'Terminé','pause':'En pause','annule':'Annulé'};el('ch-det-c',`<h3>${ch.nom}</h3><div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:12px"><span class="bdg ${sc[ch.statut]}">${sl[ch.statut]}</span><span class="bdg ${ch.priorite==='urgente'?'brd':ch.priorite==='haute'?'byw':'bgn'}">${ch.priorite}</span></div><div class="rbox" style="margin-bottom:12px"><div class="rr"><span>🔧 Technicien</span><b>${ch.tech}</b></div><div class="rr"><span>👤 Client</span><b>${ch.client}</b></div><div class="rr"><span>📍 Adresse</span><b>${ch.adresse}</b></div><div class="rr"><span>🗂️ Travaux</span><b>${ch.travaux}</b></div><div class="rr"><span>📅 Début</span><b>${ch.debut}</b></div><div class="rr"><span>🏁 Fin prévue</span><b>${ch.fin}</b></div></div>${ch.desc?`<div style="margin-bottom:10px"><div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px">Description</div><div style="background:#f0f4ff;border:1px solid var(--border);border-radius:9px;padding:10px;font-size:12px;line-height:1.6">${ch.desc}</div></div>`:''}${ch.plan?`<div style="margin-bottom:10px"><div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px">Plan de réalisation</div><div style="background:rgba(0,85,255,.03);border:1px solid rgba(0,85,255,.15);border-radius:9px;padding:10px;font-size:12px;line-height:1.6;white-space:pre-wrap">${ch.plan}</div></div>`:''}${ch.recommandations?`<div style="margin-bottom:10px"><div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px">Recommandations client</div><div style="background:rgba(0,200,83,.03);border:1px solid rgba(0,200,83,.15);border-radius:9px;padding:10px;font-size:12px;line-height:1.6">${ch.recommandations}</div></div>`:''}<div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:7px">Changer statut</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:12px"><button class="btn bg2 bsm" style="padding:9px" onclick="updCh('${ch.id}','en_cours')">▶️ En cours</button><button class="btn bg2 bsm" style="padding:9px" onclick="updCh('${ch.id}','termine')">✅ Terminé</button><button class="btn bg2 bsm" style="padding:9px" onclick="updCh('${ch.id}','pause')">⏸️ Pause</button><button class="btn br2 bsm" style="padding:9px" onclick="updCh('${ch.id}','annule')">❌ Annulé</button></div><div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Notes terrain (${ch.notes?.length||0})</div>${(ch.notes||[]).map(n=>`<div style="background:#f0f4ff;border:1px solid var(--border);border-radius:9px;padding:8px 11px;margin-bottom:5px"><div style="font-size:12px">${n.text}</div><div style="font-size:10px;color:var(--muted);margin-top:3px">📅 ${n.date}</div></div>`).join('')}<div style="display:flex;gap:7px;margin-top:6px"><input type="text" id="ch-note-in" placeholder="Note terrain..." style="flex:1;border-radius:9px;font-size:12px"><button class="btn bp bsm" onclick="addNote('${ch.id}')" style="flex-shrink:0;margin-top:0">+</button></div><div style="display:flex;gap:6px;margin-top:12px"><button class="btn bg2 bsm" style="flex:1;padding:9px" onclick="editCh('${ch.id}')">✏️ Modifier</button><button class="btn br2 bsm" style="flex:1;padding:9px" onclick="delCh('${ch.id}')">🗑️ Supprimer</button></div><button class="btn bg2" onclick="closeMo('ch-det')" style="margin-top:6px">Fermer</button>`);openMo('ch-det');}
+function updCh(id,s){const ch=chants.find(x=>x.id===id);if(ch)ch.statut=s;S('chants',chants);rChants();closeMo('ch-det');}
+function addNote(id){const t=document.getElementById('ch-note-in')?.value.trim();if(!t)return;const ch=chants.find(x=>x.id===id);if(!ch)return;if(!ch.notes)ch.notes=[];ch.notes.push({text:t,date:new Date().toLocaleDateString('fr-FR')});S('chants',chants);openChDet(id);}
+function editCh(id){const ch=chants.find(x=>x.id===id);if(!ch)return;editId=id;closeMo('ch-det');document.getElementById('ch-mo-t').textContent='Modifier chantier';document.getElementById('ch-nom').value=ch.nom;document.getElementById('ch-tech').value=ch.tech;document.getElementById('ch-cl').value=ch.client;document.getElementById('ch-adr').value=ch.adresse;document.getElementById('ch-deb').value=ch.debut!=='—'?ch.debut:'';document.getElementById('ch-fin').value=ch.fin!=='—'?ch.fin:'';document.getElementById('ch-type').value=ch.type;document.getElementById('ch-trav').value=ch.travaux;document.getElementById('ch-pri').value=ch.priorite;document.getElementById('ch-desc').value=ch.desc||'';document.getElementById('ch-plan').value=ch.plan||'';document.getElementById('ch-rec').value=ch.recommandations||'';openMo('ch-mo');}
+function delCh(id){if(confirm('Supprimer ce chantier ?')){chants=chants.filter(x=>x.id!==id);S('chants',chants);rChants();closeMo('ch-det');}}
+
+// ════ UTILS ════
+function el2(id,d){const e=document.getElementById(id);if(e)e.style.display=d;}
+function setPrev(id,src){const e=document.getElementById(id);if(e){e.src=src;e.style.display='block';}}
+async function callAI(content,sys){const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1200,system:sys,messages:[{role:'user',content}]})});const d=await res.json();const txt=d.content?.map(b=>b.text||'').join('').replace(/```json|```/g,'').trim();return JSON.parse(txt);}
+async function callAIText(userMsg,sys){const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1200,system:sys,messages:[{role:'user',content:userMsg}]})});const d=await res.json();const txt=d.content?.map(b=>b.text||'').join('').replace(/```json|```/g,'').trim();return JSON.parse(txt);}
+</script>
+</body>
+</html>
